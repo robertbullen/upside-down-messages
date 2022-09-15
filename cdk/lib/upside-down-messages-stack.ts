@@ -44,11 +44,13 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		// Create new resources.
 		const fullDomainName = `${subdomain}.${domainName}`;
 
-		const topic = this.createSnsTopic();
+		const websiteBucket = this.createS3WebsiteBucket({ fullDomainName, loggingBucket });
 
 		const messageQueue = this.createSqsMessageQueue();
 
-		const websiteBucket = this.createS3WebsiteBucket({ fullDomainName, loggingBucket });
+		const accessKey = this.createIamRpiAccessKey({ messageQueue });
+
+		const topic = this.createSnsTopic();
 
 		const { apiFunctionUrl } = this.createLambdaApiFunction({
 			fullDomainName,
@@ -68,6 +70,14 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		});
 
 		this.createRoute53WebsiteARecord({ distribution, subdomain, zone });
+
+		// Export the values needed as environment variables on the Raspberry Pi.
+		new cdk.CfnOutput(this, 'awsAccessKeyId', { value: accessKey.accessKeyId });
+		new cdk.CfnOutput(this, 'awsDefaultRegion', { value: env.region });
+		new cdk.CfnOutput(this, 'awsSecretAccessKey', {
+			value: accessKey.secretAccessKey.unsafeUnwrap(),
+		});
+		new cdk.CfnOutput(this, 'sqsQueueUrl', { value: messageQueue.queueUrl });
 	}
 
 	private createAcmCertificate({
@@ -122,6 +132,23 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 			logFilePrefix: `${this.stackName}/cloudfront`,
 			priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
 			domainNames: [fullDomainName],
+		});
+	}
+
+	private createIamRpiAccessKey({ messageQueue }: { messageQueue: sqs.Queue }): iam.AccessKey {
+		const userId = createId('RpiUser');
+		const user = new iam.User(this, userId, { userName: userId });
+		user.addToPolicy(
+			new iam.PolicyStatement({
+				actions: ['sqs:DeleteMessage', 'sqs:ReceiveMessage'],
+				effect: iam.Effect.ALLOW,
+				resources: [messageQueue.queueArn],
+			}),
+		);
+
+		const accessKeyId = createId('RpiAccessKey');
+		return new iam.AccessKey(this, accessKeyId, {
+			user: user as iam.IUser,
 		});
 	}
 
