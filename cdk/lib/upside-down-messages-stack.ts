@@ -13,7 +13,7 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import * as path from 'path';
-import { Environment } from '../../lambda/environment';
+import { Environment } from '../../lambda/src/environment';
 
 function createId(suffix: string): string {
 	return `UpsideDownMessages${suffix}`;
@@ -173,7 +173,7 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		const id = createId('ApiFunction');
 		const apiFunction = new lambdaNodeJs.NodejsFunction(this, id, {
 			architecture: lambda.Architecture.ARM_64,
-			entry: path.join(__dirname, '../../lambda/index.ts'),
+			entry: path.join(__dirname, '../../lambda/src/index.ts'),
 			environment: environment as unknown as Record<string, string>,
 			functionName: id,
 			initialPolicy: [
