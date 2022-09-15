@@ -2,7 +2,11 @@
 	"author": "Robert Bullen",
 	"dependencies": {
 		"esbuild": "^0.15.6",
+		"ts-node": "^10.9.1",
 		"typescript": "^4.8.2"
+	},
+	"devDependencies": {
+		"prettier": "^2.7.1"
 	},
 	"license": "MIT",
 	"name": "@upside-down-messages/root",

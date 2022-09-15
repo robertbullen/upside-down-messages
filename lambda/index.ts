@@ -1,4 +1,4 @@
-import { config, Polly, S3, SNS, SQS } from 'aws-sdk';
+import AWS, { Polly, S3, SNS, SQS } from 'aws-sdk';
 import * as crypto from 'crypto';
 import * as url from 'url';
 import * as util from 'util';
@@ -9,7 +9,7 @@ import { isProfane } from './profanity';
 util.inspect.defaultOptions.depth = Number.POSITIVE_INFINITY;
 
 // Initialize AWS clients.
-config.logger = console;
+AWS.config.logger = console;
 const polly = new Polly();
 const s3 = new S3();
 const sns = new SNS();
@@ -134,7 +134,8 @@ export async function handler(
 				throw new Error('`synthSpeechOutput.ContentType` not defined');
 			}
 
-			const audioDataBase64: string = synthSpeechOutput.AudioStream.toString('base64');
+			const audioDataBase64: string =
+				synthSpeechOutput.AudioStream.toString('base64');
 
 			// Save the message text and audio to the bucket.
 			const putAudioInput: S3.PutObjectRequest = {
@@ -158,10 +159,16 @@ export async function handler(
 			const fullMessage: FullMessage = {
 				audioDataBase64,
 				audioFormat,
-				audioUrl: new url.URL(putAudioInput.Key, env.WEBSITE_BASE_URL).toString(),
+				audioUrl: new url.URL(
+					putAudioInput.Key,
+					env.WEBSITE_BASE_URL,
+				).toString(),
 				messageId,
 				text: incomingMessage.text,
-				textUrl: new url.URL(putTextInput.Key, env.WEBSITE_BASE_URL).toString(),
+				textUrl: new url.URL(
+					putTextInput.Key,
+					env.WEBSITE_BASE_URL,
+				).toString(),
 			};
 			console.info(prefix, { fullMessage });
 
@@ -179,12 +186,13 @@ export async function handler(
 				AttributeNames: ['All'],
 				QueueUrl: env.SQS_QUEUE_URL,
 			};
-			const getQueueAttributesOutput: SQS.GetQueueAttributesResult = await sqs
-				.getQueueAttributes(getQueueAttributesInput)
-				.promise();
+			const getQueueAttributesOutput: SQS.GetQueueAttributesResult =
+				await sqs.getQueueAttributes(getQueueAttributesInput).promise();
 			console.info(prefix, { getQueueAttributesOutput });
 			const approximateQueueIndex: number = Number(
-				getQueueAttributesOutput.Attributes?.['ApproximateNumberOfMessages'],
+				getQueueAttributesOutput.Attributes?.[
+					'ApproximateNumberOfMessages'
+				],
 			);
 
 			response = {
@@ -203,7 +211,9 @@ export async function handler(
 			),
 			TopicArn: env.SNS_TOPIC_ARN,
 		};
-		const publishOutput: SNS.PublishResponse = await sns.publish(publishInput).promise();
+		const publishOutput: SNS.PublishResponse = await sns
+			.publish(publishInput)
+			.promise();
 		console.info(prefix, { publishOutput });
 	}
 
