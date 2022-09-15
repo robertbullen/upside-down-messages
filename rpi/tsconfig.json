@@ -3,5 +3,5 @@
 		"typeRoots": ["./node_modules/@types", ".src/typings"]
 	},
 	"extends": "../tsconfig.json",
-	"include": ["index.ts", "globals.d.ts"]
+	"include": ["./src/index.ts"]
 }

@@ -12,7 +12,7 @@
 	"name": "@upside-down-messages/rpi",
 	"private": true,
 	"scripts": {
-		"start": "sudo --preserve-env ../node_modules/.bin/ts-node --transpileOnly index.ts"
+		"start": "sudo --preserve-env ../node_modules/.bin/ts-node --transpileOnly ./src/index.ts"
 	},
 	"version": "1.0.0"
 }
