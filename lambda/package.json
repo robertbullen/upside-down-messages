@@ -1,0 +1,19 @@
+{
+	"author": "Robert Bullen",
+	"dependencies": {
+		"bad-words": "^3.0.4",
+		"leo-profanity": "https://github.com/robertbullen/leo-profanity.git",
+		"swearjar": "^0.2.0",
+		"yup": "^1.0.0-beta.7"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.102",
+		"@types/bad-words": "^3.0.1",
+		"@types/leo-profanity": "^1.5.0",
+		"aws-sdk": "^2.1209.0"
+	},
+	"license": "MIT",
+	"name": "@upside-down-messages/lambda",
+	"private": true,
+	"version": "1.0.0"
+}

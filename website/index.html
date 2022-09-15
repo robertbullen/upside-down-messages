@@ -1,0 +1,31 @@
+<html>
+	<body>
+		Upside Down Messages
+
+		<form id="message-form">
+			<input name="text" type="text" />
+			<button type="submit">Submit</button>
+		</form>
+
+		<script>
+			document.querySelector('#message-form').addEventListener('submit', async (event) => {
+				event.preventDefault();
+
+				const form = /** @type {HTMLFormElement} */ (event.target);
+				const body = JSON.stringify(Object.fromEntries(new FormData(form)));
+
+				const response = await fetch('/api/messages', {
+					body,
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+
+				if (!response.ok) {
+					console.error(response.status, response.statusText);
+				}
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,12 @@
+{
+	"author": "Robert Bullen",
+	"dependencies": {
+		"esbuild": "^0.15.6",
+		"typescript": "^4.8.2"
+	},
+	"license": "MIT",
+	"name": "@upside-down-messages/root",
+	"private": true,
+	"repository": "https://github.com/robertbullen/upside-down-messages.git",
+	"version": "1.0.0"
+}
