@@ -2,7 +2,9 @@ import * as yup from 'yup';
 
 export interface Environment {
 	S3_WEBSITE_BUCKET_NAME: string;
-	SNS_TOPIC_ARN: string;
+	SSM_TWILIO_CREDS_PARMETER_NAME: string;
+	SMS_DESTINATION_PHONE: string;
+	SMS_SOURCE_PHONE: string;
 	SQS_QUEUE_URL: string;
 	WEBSITE_BASE_URL: string;
 }
@@ -12,7 +14,9 @@ export class Environment {
 		return yup
 			.object({
 				S3_WEBSITE_BUCKET_NAME: yup.string().required(),
-				SNS_TOPIC_ARN: yup.string().required(),
+				SSM_TWILIO_CREDS_PARMETER_NAME: yup.string().required(),
+				SMS_DESTINATION_PHONE: yup.string().required(),
+				SMS_SOURCE_PHONE: yup.string().required(),
 				SQS_QUEUE_URL: yup.string().url().required(),
 				WEBSITE_BASE_URL: yup.string().url().required(),
 			})
@@ -20,4 +24,6 @@ export class Environment {
 	}
 }
 
-export const env: Environment = Environment.schema().validateSync(process.env);
+export const env: Environment = Environment.schema().validateSync(process.env, {
+	stripUnknown: true,
+});

@@ -10,9 +10,9 @@
 	},
 	"devDependencies": {
 		"@types/jest": "^27.5.2",
-		"@types/node": "10.17.27",
 		"@types/prettier": "2.6.0",
 		"aws-cdk": "2.39.0",
+		"esbuild": "^0.15.8",
 		"jest": "^27.5.1",
 		"ts-jest": "^27.1.4",
 		"ts-node": "^10.9.1"
@@ -25,5 +25,6 @@
 		"test": "jest",
 		"watch": "tsc -w"
 	},
+	"type": "module",
 	"version": "0.1.0"
 }

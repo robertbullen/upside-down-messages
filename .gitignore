@@ -1,12 +1,6 @@
 # Global patterns.
 node_modules/
-*.local.sh
-
-/local/
-
-# *.js
-# !jest.config.js
-# *.d.ts
+*.local
 
 # CDK asset staging directory
 /cdk/.cdk.staging

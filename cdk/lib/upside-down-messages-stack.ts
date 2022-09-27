@@ -9,27 +9,34 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3Deployment from 'aws-cdk-lib/aws-s3-deployment';
-import * as sns from 'aws-cdk-lib/aws-sns';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-import * as path from 'path';
-import { Environment } from '../../lambda/src/environment';
-
-function createId(suffix: string): string {
-	return `UpsideDownMessages${suffix}`;
-}
+import { Environment as LambdaEnvironment } from '../../lambda/src/environment.js';
+import { TwilioCredentials } from '../../lib/twilio-credentials.js';
 
 export interface UpsideDownMessagesStackProps {
 	domainName: string;
 	env: Required<cdk.Environment>;
 	loggingBucketName: string;
+	smsDestinationPhone: string;
+	smsSourcePhone: string;
 	subdomain: string;
+	twilioCreds: TwilioCredentials;
 }
 
 export class UpsideDownMessagesStack extends cdk.Stack {
 	constructor(
 		scope: Construct,
-		{ domainName, env, loggingBucketName, subdomain }: UpsideDownMessagesStackProps,
+		{
+			domainName,
+			env,
+			loggingBucketName,
+			smsDestinationPhone,
+			smsSourcePhone,
+			subdomain,
+			twilioCreds,
+		}: UpsideDownMessagesStackProps,
 	) {
 		const id = createId('Stack');
 		super(scope, id, {
@@ -44,18 +51,25 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		// Create new resources.
 		const fullDomainName = `${subdomain}.${domainName}`;
 
-		const websiteBucket = this.createS3WebsiteBucket({ fullDomainName, loggingBucket });
+		const websiteBucket = this.createS3WebsiteBucket({
+			fullDomainName,
+			loggingBucket,
+		});
 
 		const messageQueue = this.createSqsMessageQueue();
 
 		const accessKey = this.createIamRpiAccessKey({ messageQueue });
 
-		const topic = this.createSnsTopic();
+		const twilioCredsParameter = this.createSsmTwilioCredsParameter({
+			twilioCreds,
+		});
 
 		const { apiFunctionUrl } = this.createLambdaApiFunction({
 			fullDomainName,
 			messageQueue,
-			topic,
+			smsDestinationPhone,
+			smsSourcePhone,
+			twilioCredsParameter,
 			websiteBucket,
 		});
 
@@ -72,12 +86,16 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		this.createRoute53WebsiteARecord({ distribution, subdomain, zone });
 
 		// Export the values needed as environment variables on the Raspberry Pi.
-		new cdk.CfnOutput(this, 'awsAccessKeyId', { value: accessKey.accessKeyId });
+		new cdk.CfnOutput(this, 'awsAccessKeyId', {
+			value: accessKey.accessKeyId,
+		});
 		new cdk.CfnOutput(this, 'awsDefaultRegion', { value: env.region });
 		new cdk.CfnOutput(this, 'awsSecretAccessKey', {
 			value: accessKey.secretAccessKey.unsafeUnwrap(),
 		});
-		new cdk.CfnOutput(this, 'sqsQueueUrl', { value: messageQueue.queueUrl });
+		new cdk.CfnOutput(this, 'sqsQueueUrl', {
+			value: messageQueue.queueUrl,
+		});
 	}
 
 	private createAcmCertificate({
@@ -119,14 +137,16 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 					origin: new cloudfrontOrigins.HttpOrigin(
 						cdk.Fn.parseDomainName(apiFunctionUrl.url),
 					),
-					viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
+					viewerProtocolPolicy:
+						cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
 				},
 			},
 			defaultBehavior: {
 				allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
 				cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
 				origin: new cloudfrontOrigins.S3Origin(websiteBucket),
-				viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+				viewerProtocolPolicy:
+					cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
 			},
 			logBucket: loggingBucket,
 			logFilePrefix: `${this.stackName}/cloudfront`,
@@ -135,7 +155,11 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		});
 	}
 
-	private createIamRpiAccessKey({ messageQueue }: { messageQueue: sqs.Queue }): iam.AccessKey {
+	private createIamRpiAccessKey({
+		messageQueue,
+	}: {
+		messageQueue: sqs.Queue;
+	}): iam.AccessKey {
 		const userId = createId('RpiUser');
 		const user = new iam.User(this, userId, { userName: userId });
 		user.addToPolicy(
@@ -155,17 +179,23 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 	private createLambdaApiFunction({
 		fullDomainName,
 		messageQueue,
-		topic,
+		smsDestinationPhone,
+		smsSourcePhone,
+		twilioCredsParameter,
 		websiteBucket,
 	}: {
 		fullDomainName: string;
 		messageQueue: sqs.Queue;
-		topic: sns.Topic;
+		smsDestinationPhone: string;
+		smsSourcePhone: string;
+		twilioCredsParameter: ssm.StringParameter;
 		websiteBucket: s3.Bucket;
 	}): { apiFunction: lambda.Function; apiFunctionUrl: lambda.FunctionUrl } {
-		const environment: Environment = {
+		const environment: LambdaEnvironment = {
 			S3_WEBSITE_BUCKET_NAME: websiteBucket.bucketName,
-			SNS_TOPIC_ARN: topic.topicArn,
+			SSM_TWILIO_CREDS_PARMETER_NAME: twilioCredsParameter.parameterName,
+			SMS_DESTINATION_PHONE: smsDestinationPhone,
+			SMS_SOURCE_PHONE: smsSourcePhone,
 			SQS_QUEUE_URL: messageQueue.queueUrl,
 			WEBSITE_BASE_URL: `https://${fullDomainName}/`,
 		};
@@ -173,7 +203,11 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		const id = createId('ApiFunction');
 		const apiFunction = new lambdaNodeJs.NodejsFunction(this, id, {
 			architecture: lambda.Architecture.ARM_64,
-			entry: path.join(__dirname, '../../lambda/src/index.ts'),
+			// bundling: {
+			// 	format: lambdaNodeJs.OutputFormat.ESM,
+			// 	sourceMap: true,
+			// },
+			entry: '../lambda/src/index.ts',
 			environment: environment as unknown as Record<string, string>,
 			functionName: id,
 			initialPolicy: [
@@ -188,14 +222,14 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 					resources: [websiteBucket.arnForObjects('audio/*')],
 				}),
 				new iam.PolicyStatement({
-					actions: ['sns:Publish'],
-					effect: iam.Effect.ALLOW,
-					resources: [topic.topicArn],
-				}),
-				new iam.PolicyStatement({
 					actions: ['sqs:GetQueueAttributes', 'sqs:SendMessage'],
 					effect: iam.Effect.ALLOW,
 					resources: [messageQueue.queueArn],
+				}),
+				new iam.PolicyStatement({
+					actions: ['ssm:GetParameter'],
+					effect: iam.Effect.ALLOW,
+					resources: [twilioCredsParameter.parameterArn],
 				}),
 			],
 			runtime: lambda.Runtime.NODEJS_16_X,
@@ -250,21 +284,20 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 			websiteIndexDocument: 'index.html',
 		});
 
-		new s3Deployment.BucketDeployment(this, createId('WebsiteBucketDeployment'), {
-			destinationBucket: bucket,
-			sources: [s3Deployment.Source.asset(path.join(__dirname, '../../website'))],
-		});
+		new s3Deployment.BucketDeployment(
+			this,
+			createId('WebsiteBucketDeployment'),
+			{
+				destinationBucket: bucket,
+				sources: [
+					s3Deployment.Source.asset('../website', {
+						exclude: ['node_modules', 'package.json', 'yarn.lock'],
+					}),
+				],
+			},
+		);
 
 		return bucket;
-	}
-
-	private createSnsTopic(): sns.Topic {
-		const id = createId('Topic');
-		return new sns.Topic(this, id, {
-			displayName: 'Upside Down Messages',
-			fifo: false,
-			topicName: id,
-		});
 	}
 
 	private createSqsMessageQueue(): sqs.Queue {
@@ -272,8 +305,28 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		return new sqs.Queue(this, id, { queueName: id });
 	}
 
-	private importRoute53HostedZone({ domainName }: { domainName: string }): route53.IHostedZone {
-		return route53.HostedZone.fromLookup(this, 'HostedZone', { domainName });
+	private createSsmTwilioCredsParameter({
+		twilioCreds,
+	}: {
+		twilioCreds: TwilioCredentials;
+	}): ssm.StringParameter {
+		return new ssm.StringParameter(this, createId('TwilioCredsParameter'), {
+			parameterName: `/${stackRootName}/TwilioCreds`,
+			stringValue: JSON.stringify(twilioCreds, undefined, '\t'),
+			// Creating a secure string parameter is not supported by CloudFormation at the time of
+			// this writing.
+			// type: ssm.ParameterType.SECURE_STRING,
+		});
+	}
+
+	private importRoute53HostedZone({
+		domainName,
+	}: {
+		domainName: string;
+	}): route53.IHostedZone {
+		return route53.HostedZone.fromLookup(this, 'HostedZone', {
+			domainName,
+		});
 	}
 
 	private importS3LoggingBucket({
@@ -281,6 +334,16 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 	}: {
 		loggingBucketName: string;
 	}): s3.IBucket {
-		return s3.Bucket.fromBucketName(this, createId('LoggingBucket'), loggingBucketName);
+		return s3.Bucket.fromBucketName(
+			this,
+			createId('LoggingBucket'),
+			loggingBucketName,
+		);
 	}
+}
+
+const stackRootName = `UpsideDownMessages`;
+
+function createId(suffix: string): string {
+	return `${stackRootName}${suffix}`;
 }

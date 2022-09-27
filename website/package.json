@@ -1,0 +1,13 @@
+{
+	"devDependencies": {
+		"live-server": "^1.2.2"
+	},
+	"license": "MIT",
+	"main": "index.js",
+	"name": "@upside-down-messages/website",
+	"scripts": {
+		"prepare": "npx crlf --set=LF node_modules/.bin/live-server",
+		"start": "live-server --verbose"
+	},
+	"version": "1.0.0"
+}

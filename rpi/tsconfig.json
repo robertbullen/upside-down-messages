@@ -1,7 +1,4 @@
 {
-	"compilerOptions": {
-		"typeRoots": ["./node_modules/@types", ".src/typings"]
-	},
 	"extends": "../tsconfig.json",
 	"include": ["./src/index.ts"]
 }

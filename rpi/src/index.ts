@@ -1,104 +1,97 @@
-import AWS, { SQS } from 'aws-sdk';
-import ws281x from 'rpi-ws281x-native';
+import uniqueRandomArray from 'unique-random-array';
+import * as url from 'url';
 import * as util from 'util';
-import { env } from './environment';
-
-AWS.config.logger = console;
-AWS.config.region = env.AWS_DEFAULT_REGION;
+import { Message } from '../../lib/messages.js';
+import { ColorArrayAnimation } from './animations.js';
+import { CharToLedIndexHash } from './char-to-led-index-hash.js';
+import { Color } from './color.js';
+import { env } from './environment.js';
+import { LedController } from './led-controller.js';
+import { receiveMessages } from './message-queue.js';
 
 util.inspect.defaultOptions.depth = Number.POSITIVE_INFINITY;
-
-const LED_COUNT = 100;
-
-function initializeLeds(): any {
-	const channel = ws281x(LED_COUNT, {
-		freq: 800000,
-		stripType: ws281x.stripType.WS2811_RGB,
-	});
-	ws281x.reset();
-	ws281x.render();
-
-	return channel;
-}
-
-function finalizeLeds(): void {
-	ws281x.reset();
-	ws281x.render();
-	ws281x.finalize();
-}
 
 async function main(): Promise<void> {
 	const prefix: string = main.name;
 
-	// Initialize the LED strips.
-	const channel: any = initializeLeds();
-	try {
-		// Trap SIGINT and finalize the LED strips.
-		process.on('SIGINT', (): void => {
-			finalizeLeds();
-			process.nextTick((): void => process.exit(0));
-		});
+	// Load external assets.
+	// TODO: Load from CLI argument.
 
+	const charToLedIndexHash = await CharToLedIndexHash.loadFromFile(
+		new url.URL('char-to-led-index-hash.json', import.meta.url).toString(),
+		env.LED_COUNT,
+	);
+	console.info(prefix, { charToLedIndexHash });
+
+	// TODO: Load from CLI argument.
+	const fodderMessages = ['help me', '', '', '', '', ''];
+	console.info(prefix, { fodderMessages });
+
+	const randomFodderMessage = uniqueRandomArray(fodderMessages);
+
+	// Initialize the LED controller and declare a convenience function for rendering to it.
+	const ledController = new LedController(env.LED_COUNT);
+
+	async function renderAnimation(
+		animation: ColorArrayAnimation,
+	): Promise<void> {
+		await animation.eventCallback('onUpdate', (colors: Color[]): void =>
+			ledController.render(colors),
+		);
+		ledController.reset();
+	}
+
+	try {
+		// Trap SIGINT to dispose of the LED controller before exiting.
+		process.on('SIGINT', () => {
+			ledController.dispose();
+			process.nextTick(() => process.exit(0));
+		});
 		console.log('Press <Ctrl+C> to exit.');
 
-		// Start animation loop.
-		var offset = 0;
-		setInterval(function () {
-			for (var i = 0; i < LED_COUNT; i++) {
-				channel.array[i] = colorwheel((offset + i) % 256);
-			}
-			ws281x.render();
+		// Show a startup animation.
+		await renderAnimation(
+			ColorArrayAnimation.scrollingRainbow({
+				ledCount: env.LED_COUNT,
+				repeat: 1,
+				cycleDuration: 2,
+			}),
+		);
 
-			offset = (offset + 1) % 256;
-		}, 1000 / 100);
+		// Poll for messages on the SQS queue.
+		for await (const message of receiveMessages<Message>(
+			env.SQS_QUEUE_URL,
+			Message.schema(),
+		)) {
+			console.info(prefix, { message });
 
-		// Long poll for messages on the SQS queue.
-		const sqs = new SQS();
+			// Animate the message.
+			const text: string = message?.text ?? randomFodderMessage();
+			if (text) {
+				// Show a preamble.
+				await renderAnimation(
+					ColorArrayAnimation.blinkChaos({
+						cycleDuration: 1.5,
+						ledCount: env.LED_COUNT,
+						repeat: 1,
+					}),
+				);
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 
-		for (;;) {
-			const receiveMessageInput: SQS.ReceiveMessageRequest = {
-				QueueUrl: env.SQS_QUEUE_URL,
-				MaxNumberOfMessages: 1,
-				WaitTimeSeconds: 20,
-			};
-			const receiveMessageOutput: SQS.ReceiveMessageResult = await sqs
-				.receiveMessage(receiveMessageInput)
-				.promise();
-			console.info(prefix, { receiveMessageOutput });
-
-			for (const message of receiveMessageOutput.Messages ?? []) {
-				const deleteMessageInput: SQS.DeleteMessageRequest = {
-					QueueUrl: env.SQS_QUEUE_URL,
-					ReceiptHandle: message.ReceiptHandle || '',
-				};
-				await sqs.deleteMessage(deleteMessageInput).promise();
+				// Show the message itself.
+				await renderAnimation(
+					ColorArrayAnimation.letterByLetter({
+						charToLedIndexHash,
+						ledCount: env.LED_COUNT,
+						text,
+					}),
+				);
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 			}
 		}
-	} catch (error) {
-		console.error(prefix, { error });
-
-		finalizeLeds();
-
-		throw error;
+	} finally {
+		ledController.dispose();
 	}
 }
 
 main();
-
-// rainbow-colors, taken from http://goo.gl/Cs3H0v
-function colorwheel(pos: number): number {
-	pos = 255 - pos;
-	if (pos < 85) {
-		return rgb2Int(255 - pos * 3, 0, pos * 3);
-	} else if (pos < 170) {
-		pos -= 85;
-		return rgb2Int(0, pos * 3, 255 - pos * 3);
-	} else {
-		pos -= 170;
-		return rgb2Int(pos * 3, 255 - pos * 3, 0);
-	}
-}
-
-function rgb2Int(r: number, g: number, b: number): number {
-	return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
-}

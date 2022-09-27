@@ -1,6 +1,9 @@
 <html>
+	<head>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
 	<body>
-		Upside Down Messages
+		<h1>Upside Down Messages</h1>
 
 		<form id="message-form">
 			<input name="text" type="text" />
@@ -8,24 +11,28 @@
 		</form>
 
 		<script>
-			document.querySelector('#message-form').addEventListener('submit', async (event) => {
-				event.preventDefault();
+			document
+				.querySelector('#message-form')
+				.addEventListener('submit', async (event) => {
+					event.preventDefault();
 
-				const form = /** @type {HTMLFormElement} */ (event.target);
-				const body = JSON.stringify(Object.fromEntries(new FormData(form)));
+					const form = /** @type {HTMLFormElement} */ (event.target);
+					const body = JSON.stringify(
+						Object.fromEntries(new FormData(form)),
+					);
 
-				const response = await fetch('/api/messages', {
-					body,
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
+					const response = await fetch('/api/messages', {
+						body,
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					});
+
+					if (!response.ok) {
+						console.error(response.status, response.statusText);
+					}
 				});
-
-				if (!response.ok) {
-					console.error(response.status, response.statusText);
-				}
-			});
 		</script>
 	</body>
 </html>

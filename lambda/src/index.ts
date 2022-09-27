@@ -1,19 +1,29 @@
-import AWS, { Polly, S3, SNS, SQS } from 'aws-sdk';
+import AWS, { Polly, S3, SQS, SSM } from 'aws-sdk';
 import * as crypto from 'crypto';
 import * as url from 'url';
 import * as util from 'util';
 import * as yup from 'yup';
-import { env } from './environment';
-import { isProfane } from './profanity';
+import { AudioFormat, Message } from '../../lib/messages.js';
+import { env } from './environment.js';
+import { isProfane } from './profanity.js';
+import { SmsService } from './sms-service.js';
 
 util.inspect.defaultOptions.depth = Number.POSITIVE_INFINITY;
 
-// Initialize AWS clients.
+// Initialize clients.
 AWS.config.logger = console;
+
 const polly = new Polly();
 const s3 = new S3();
-const sns = new SNS();
+const ssm = new SSM();
 const sqs = new SQS();
+
+const sms = new SmsService(
+	ssm,
+	env.SSM_TWILIO_CREDS_PARMETER_NAME,
+	env.SMS_SOURCE_PHONE,
+	env.SMS_DESTINATION_PHONE,
+);
 
 // Define the type of the incoming messages.
 interface IncomingMessage {
@@ -26,26 +36,9 @@ const incomingMessageSchema: yup.ObjectSchema<IncomingMessage> = yup
 	})
 	.required();
 
-const AudioFormat = {
-	mp3: 'mp3',
-	oggVorbis: 'ogg_vorbis',
-	pcm: 'pcm',
-} as const;
-
-// Define the type of the outgoing SQS messages.
-type AudioFormat = typeof AudioFormat[keyof typeof AudioFormat];
-
-interface FullMessage extends IncomingMessage {
-	audioDataBase64: string;
-	audioFormat: AudioFormat;
-	audioUrl: string;
-	messageId: string;
-	textUrl: string;
-}
-
 interface OkResponse {
 	approximateQueueIndex: number;
-	message: FullMessage;
+	message: Message;
 	statusCode: 200;
 }
 
@@ -156,7 +149,7 @@ export async function handler(
 			]);
 			console.info(prefix, { putAudioOutput, putTextOutput });
 
-			const fullMessage: FullMessage = {
+			const outgoingMessage: Message = {
 				audioDataBase64,
 				audioFormat,
 				audioUrl: new url.URL(
@@ -170,11 +163,11 @@ export async function handler(
 					env.WEBSITE_BASE_URL,
 				).toString(),
 			};
-			console.info(prefix, { fullMessage });
+			console.info(prefix, { outgoingMessage });
 
 			// Submit the message text and audio to the queue.
 			const sendMessageInput: SQS.SendMessageRequest = {
-				MessageBody: JSON.stringify(fullMessage),
+				MessageBody: JSON.stringify(outgoingMessage),
 				QueueUrl: env.SQS_QUEUE_URL,
 			};
 			const sendMessageOutput: SQS.SendMessageResult = await sqs
@@ -197,24 +190,18 @@ export async function handler(
 
 			response = {
 				approximateQueueIndex,
-				message: fullMessage,
+				message: outgoingMessage,
 				statusCode: 200,
 			};
 		}
 
-		// Notify subscribers that a message was received.
-		const publishInput: SNS.PublishInput = {
-			Message: JSON.stringify(
-				response,
-				(key, value) => (key === 'audioDataBase64' ? undefined : value),
-				'\t',
-			),
-			TopicArn: env.SNS_TOPIC_ARN,
-		};
-		const publishOutput: SNS.PublishResponse = await sns
-			.publish(publishInput)
-			.promise();
-		console.info(prefix, { publishOutput });
+		// Notify the administrator that a message was received.
+		const text: string = JSON.stringify(
+			response,
+			(key, value) => (key === 'audioDataBase64' ? undefined : value),
+			'\t',
+		);
+		await sms.sendSms(text);
 	}
 
 	// Return.

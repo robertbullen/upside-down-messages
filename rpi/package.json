@@ -2,17 +2,18 @@
 	"author": "Robert Bullen",
 	"dependencies": {
 		"aws-sdk": "^2.1216.0",
+		"gsap": "^3.11.1",
 		"rpi-ws281x-native": "^1.0.4",
+		"unique-random-array": "^3.0.0",
 		"yup": "^1.0.0-beta.7"
 	},
-	"devDependencies": {
-		"@types/node": "^18.7.18"
-	},
+	"devDependencies": {},
 	"license": "MIT",
 	"name": "@upside-down-messages/rpi",
 	"private": true,
 	"scripts": {
 		"start": "sudo --preserve-env ../node_modules/.bin/ts-node --transpileOnly ./src/index.ts"
 	},
+	"type": "module",
 	"version": "1.0.0"
 }

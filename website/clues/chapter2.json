@@ -1,0 +1,13 @@
+{
+	"title": "Chapter Two",
+	"subtitle": "Grace's Creature",
+	"question": "What animal can't get wet?",
+	"answers": ["chinchilla"],
+	"riddleLines": [
+		"Roses are ___",
+		"violets are blue",
+		"Boogers are _____",
+		"Poop is brown"
+	],
+	"upsideDownMessage": "red green"
+}
