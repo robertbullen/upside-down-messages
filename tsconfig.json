@@ -5,11 +5,11 @@
 		"esModuleInterop": true,
 		"exactOptionalPropertyTypes": true,
 		"experimentalDecorators": true,
-		"forceConsistentCasingInFileNames": true,
+		"forceConsistentCasingInFileNames": false,
 		"inlineSourceMap": true,
 		"inlineSources": true,
 		"lib": ["es2022"],
-		"module": "commonjs",
+		"module": "NodeNext",
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": true,
 		"noImplicitOverride": true,
@@ -28,5 +28,8 @@
 		"strictPropertyInitialization": true,
 		"target": "es2022",
 		"useUnknownInCatchVariables": true
+	},
+	"ts-node": {
+		"esm": true
 	}
 }
