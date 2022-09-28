@@ -18,7 +18,7 @@ async function main(): Promise<void> {
 	// TODO: Load from CLI argument.
 
 	const charToLedIndexHash = await CharToLedIndexHash.loadFromFile(
-		new url.URL('char-to-led-index-hash.json', import.meta.url).toString(),
+		new url.URL('char-to-led-index-hash.json', import.meta.url),
 		env.LED_COUNT,
 	);
 	console.info(prefix, { charToLedIndexHash });
