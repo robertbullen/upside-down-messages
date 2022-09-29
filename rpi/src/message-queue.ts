@@ -17,7 +17,7 @@ export async function* receiveMessages<T>(
 	const receiveMessageInput: AWS.SQS.ReceiveMessageRequest = {
 		QueueUrl: queueUrl,
 		MaxNumberOfMessages: 1,
-		WaitTimeSeconds: 10,
+		WaitTimeSeconds: 20,
 	};
 
 	for (; !signal?.aborted; ) {
@@ -36,9 +36,7 @@ export async function* receiveMessages<T>(
 				};
 				await sqs.deleteMessage(deleteMessageInput).promise();
 
-				const result: T = schema.validateSync(
-					JSON.parse(message.Body ?? ''),
-				);
+				const result: T = schema.validateSync(JSON.parse(message.Body ?? ''));
 				yield result;
 			}
 		}

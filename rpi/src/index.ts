@@ -24,20 +24,36 @@ async function main(): Promise<void> {
 	console.info(prefix, { charToLedIndexHash });
 
 	// TODO: Load from CLI argument.
-	const fodderMessages = ['help me', '', '', '', '', ''];
+	const fodderMessages = [
+		'are you there',
+		'friends do not lie',
+		'help me',
+		'i am the monster',
+		'i am trapped',
+		'i see you',
+		'join us',
+		'mouthbreather',
+		'run',
+		'the gate is open',
+		'the mind flayer sees you',
+		'vecna lives',
+		'we are nerds and freaks',
+		'you are the monster',
+		'you have lost',
+		'you will break',
+	];
 	console.info(prefix, { fodderMessages });
 
 	const randomFodderMessage = uniqueRandomArray(fodderMessages);
 
 	// Initialize the LED controller and declare a convenience function for rendering to it.
-	const ledController = new LedController(env.LED_COUNT);
+	const ledMask = new Array<boolean>(env.LED_COUNT).fill(false, 0, 9).fill(true, 9);
+	const ledController = new LedController(env.LED_COUNT, ledMask);
 
-	async function renderAnimation(
-		animation: ColorArrayAnimation,
-	): Promise<void> {
-		await animation.eventCallback('onUpdate', (colors: Color[]): void =>
-			ledController.render(colors),
-		);
+	async function renderAnimation(animation: ColorArrayAnimation): Promise<void> {
+		await animation.eventCallback('onUpdate', (colors: Color[]): void => {
+			ledController.render(colors);
+		});
 		ledController.reset();
 	}
 
@@ -52,28 +68,26 @@ async function main(): Promise<void> {
 		// Show a startup animation.
 		await renderAnimation(
 			ColorArrayAnimation.scrollingRainbow({
+				cycleDuration: 5,
 				ledCount: env.LED_COUNT,
 				repeat: 1,
-				cycleDuration: 2,
 			}),
 		);
 
 		// Poll for messages on the SQS queue.
-		for await (const message of receiveMessages<Message>(
-			env.SQS_QUEUE_URL,
-			Message.schema(),
-		)) {
+		for await (const message of receiveMessages<Message>(env.SQS_QUEUE_URL, Message.schema())) {
 			console.info(prefix, { message });
 
-			// Animate the message.
-			const text: string = message?.text ?? randomFodderMessage();
+			// Animate the message. Fill emptiness with fodder sometimes.
+			let text: string | undefined = message?.text;
+			if (!text && !!Math.round(Math.random())) text = randomFodderMessage();
+
 			if (text) {
 				// Show a preamble.
 				await renderAnimation(
-					ColorArrayAnimation.blinkChaos({
-						cycleDuration: 1.5,
+					ColorArrayAnimation.swellOn({
+						cycleDuration: 5,
 						ledCount: env.LED_COUNT,
-						repeat: 1,
 					}),
 				);
 				await new Promise((resolve) => setTimeout(resolve, 1000));

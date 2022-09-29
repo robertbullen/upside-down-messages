@@ -281,9 +281,7 @@
 								required
 								type="text"
 							/>
-							<button class="btn btn-primary" type="submit">
-								Submit
-							</button>
+							<button class="btn btn-primary" type="submit">Submit</button>
 						</div>
 					</form>
 				</div>
@@ -292,26 +290,17 @@
 			<section id="correct-alert">
 				<div class="alert alert-success" role="alert">
 					<p>
-						That's correct! You guys are smart enough to be in the
-						Hellfire Club. Ready for your riddle?
+						That's correct! You guys are smart enough to be in the Hellfire Club. Ready
+						for your riddle?
 					</p>
 
-					<button class="btn btn-outline-success">
-						Show the riddle
-					</button>
+					<button class="btn btn-outline-success">Show the riddle</button>
 				</div>
 			</section>
 
 			<section id="incorrect-alert">
-				<div
-					class="alert alert-danger"
-					id="incorrect-alert"
-					role="alert"
-				>
-					<p>
-						That's incorrect. Has your mind been flayed or
-						something?
-					</p>
+				<div class="alert alert-danger" id="incorrect-alert" role="alert">
+					<p>That's incorrect. Has your mind been flayed or something?</p>
 
 					<button class="btn btn-outline-danger">Try again</button>
 				</div>
@@ -330,27 +319,22 @@
 			<section id="first-udm-alert">
 				<div class="alert alert-secondary">
 					<p>
-						Only Will knows the missing pieces of the riddle! Head
-						back to the Christmas lights so he can communicate from
-						the Upside Down, then click the button.
+						Only Will knows the missing pieces of the riddle! Head back to the Christmas
+						lights so he can communicate from the Upside Down, then click the button.
 					</p>
 
-					<button class="btn btn-outline-secondary">
-						Tell us, Will
-					</button>
+					<button class="btn btn-outline-secondary">Tell us, Will</button>
 				</div>
 			</section>
 
 			<section id="second-udm-alert">
 				<div class="alert alert-info">
 					<p>
-						Watch the Christmas lights! Will is going to tell you
-						the missing words any second now.
+						Watch the Christmas lights! Will is going to tell you the missing words any
+						second now.
 					</p>
 
-					<button class="btn btn-outline-info">
-						Show us again, Will
-					</button>
+					<button class="btn btn-outline-info">Show us again, Will</button>
 				</div>
 			</section>
 		</main>
@@ -386,9 +370,7 @@
 				errorSection: document.querySelector('section#error'),
 
 				/** @type {HTMLSpanElement} */
-				errorMessageSpan: document.querySelector(
-					'section#error span#error-message',
-				),
+				errorMessageSpan: document.querySelector('section#error span#error-message'),
 
 				/** @type {HTMLElement} */
 				questionSection: document.querySelector('section#question'),
@@ -400,29 +382,19 @@
 				questionForm: document.querySelector('section#question form'),
 
 				/** @type {HTMLInputElement} */
-				questionAnswerInput: document.querySelector(
-					'section#question input#answer',
-				),
+				questionAnswerInput: document.querySelector('section#question input#answer'),
 
 				/** @type {HTMLElement} */
-				correctAlertSection: document.querySelector(
-					'section#correct-alert',
-				),
+				correctAlertSection: document.querySelector('section#correct-alert'),
 
 				/** @type {HTMLButtonElement} */
-				correctAlertButton: document.querySelector(
-					'section#correct-alert button',
-				),
+				correctAlertButton: document.querySelector('section#correct-alert button'),
 
 				/** @type {HTMLElement} */
-				incorrectAlertSection: document.querySelector(
-					'section#incorrect-alert',
-				),
+				incorrectAlertSection: document.querySelector('section#incorrect-alert'),
 
 				/** @type {HTMLButtonElement} */
-				incorrectAlertButton: document.querySelector(
-					'section#incorrect-alert button',
-				),
+				incorrectAlertButton: document.querySelector('section#incorrect-alert button'),
 
 				/** @type {HTMLElement} */
 				riddleSection: document.querySelector('section#riddle'),
@@ -431,24 +403,16 @@
 				riddleUl: document.querySelector('section#riddle ul'),
 
 				/** @type {HTMLElement} */
-				firstUdmAlertSection: document.querySelector(
-					'section#first-udm-alert',
-				),
+				firstUdmAlertSection: document.querySelector('section#first-udm-alert'),
 
 				/** @type {HTMLButtonElement} */
-				firstUdmAlertButton: document.querySelector(
-					'section#first-udm-alert button',
-				),
+				firstUdmAlertButton: document.querySelector('section#first-udm-alert button'),
 
 				/** @type {HTMLElement} */
-				secondUdmAlertSection: document.querySelector(
-					'section#second-udm-alert',
-				),
+				secondUdmAlertSection: document.querySelector('section#second-udm-alert'),
 
 				/** @type {HTMLButtonElement} */
-				secondUdmAlertButton: document.querySelector(
-					'section#second-udm-alert button',
-				),
+				secondUdmAlertButton: document.querySelector('section#second-udm-alert button'),
 			};
 
 			/**
@@ -456,16 +420,16 @@
 			 */
 			async function getClue() {
 				const queryParams = new URLSearchParams(window.location.search);
-				const clueName = queryParams.get('clueName');
-				if (!clueName) {
-					throw new Error(
-						'Required query parameter `clueName` was not specified',
-					);
-				}
+				const clueName = queryParams.get('clueName') ?? 'chapter0';
 
 				// Fetch the clue and add it to the DOM.
 				const clueFilePath = `clues/${clueName}.json`;
 				const response = await fetch(clueFilePath);
+				if (!response.ok) {
+					throw new Error(
+						`Error fetching \`clueFilePath\`='${clueFilePath}': ${response.status} ${response.statusText}`,
+					);
+				}
 
 				return await response.json();
 			}
@@ -515,9 +479,7 @@
 				});
 
 				if (!response.ok) {
-					throw new Error(
-						`${response.status} ${response.statusText}`,
-					);
+					throw new Error(`${response.status} ${response.statusText}`);
 				}
 			}
 
@@ -533,9 +495,7 @@
 						.toLowerCase();
 				}
 
-				const answer = sanitizeAnswer(
-					elements.questionAnswerInput.value,
-				);
+				const answer = sanitizeAnswer(elements.questionAnswerInput.value);
 
 				return clue.answers.map(sanitizeAnswer).includes(answer);
 			}
@@ -583,10 +543,7 @@
 					case 'show-incorrect-alert':
 						showElementsMap.set(elements.main, true);
 						showElementsMap.set(elements.questionSection, true);
-						showElementsMap.set(
-							elements.incorrectAlertSection,
-							true,
-						);
+						showElementsMap.set(elements.incorrectAlertSection, true);
 						scrollToElement = elements.incorrectAlertSection;
 						focusElement = elements.incorrectAlertButton;
 						break;
@@ -594,10 +551,7 @@
 					case 'show-riddle-1':
 						showElementsMap.set(elements.main, true);
 						showElementsMap.set(elements.riddleSection, true);
-						showElementsMap.set(
-							elements.firstUdmAlertSection,
-							true,
-						);
+						showElementsMap.set(elements.firstUdmAlertSection, true);
 						scrollToElement = elements.riddleSection;
 						focusElement = elements.firstUdmAlertButton;
 						break;
@@ -605,10 +559,7 @@
 					case 'show-riddle-2':
 						showElementsMap.set(elements.main, true);
 						showElementsMap.set(elements.riddleSection, true);
-						showElementsMap.set(
-							elements.secondUdmAlertSection,
-							true,
-						);
+						showElementsMap.set(elements.secondUdmAlertSection, true);
 						scrollToElement = elements.secondUdmAlertSection;
 						focusElement = elements.secondUdmAlertButton;
 						break;
@@ -653,73 +604,58 @@
 					updateDomState('show-question');
 
 					// Attach event handlers.
-					elements.questionForm.addEventListener(
-						'submit',
-						async (event) => {
-							try {
-								event.preventDefault();
-								if (checkAnswer(clue)) {
-									updateDomState('show-correct-alert');
-								} else {
-									updateDomState('show-incorrect-alert');
-								}
-							} catch (error) {
-								populateError(error);
-								updateDomState('show-error');
-								throw error;
+					elements.questionForm.addEventListener('submit', async (event) => {
+						try {
+							event.preventDefault();
+							if (checkAnswer(clue)) {
+								updateDomState('show-correct-alert');
+							} else {
+								updateDomState('show-incorrect-alert');
 							}
-						},
-					);
+						} catch (error) {
+							populateError(error);
+							updateDomState('show-error');
+							throw error;
+						}
+					});
 
-					elements.correctAlertButton.addEventListener(
-						'click',
-						() => {
-							try {
-								updateDomState('show-riddle-1');
-							} catch (error) {
-								populateError(error);
-								updateDomState('show-error');
-							}
-						},
-					);
+					elements.correctAlertButton.addEventListener('click', () => {
+						try {
+							updateDomState('show-riddle-1');
+						} catch (error) {
+							populateError(error);
+							updateDomState('show-error');
+						}
+					});
 
-					elements.incorrectAlertButton.addEventListener(
-						'click',
-						() => {
-							try {
-								updateDomState('show-question');
-							} catch (error) {
-								populateError(error);
-								updateDomState('show-error');
-							}
-						},
-					);
+					elements.incorrectAlertButton.addEventListener('click', () => {
+						try {
+							updateDomState('show-question');
+						} catch (error) {
+							populateError(error);
+							updateDomState('show-error');
+						}
+					});
 
-					elements.firstUdmAlertButton.addEventListener(
-						'click',
-						async () => {
-							try {
-								await postUpsideDownMessage(clue);
-								updateDomState('show-riddle-2');
-							} catch (error) {
-								populateError(error);
-								updateDomState('show-error');
-							}
-						},
-					);
+					elements.firstUdmAlertButton.addEventListener('click', async () => {
+						try {
+							await postUpsideDownMessage(clue);
+							updateDomState('show-riddle-2');
+						} catch (error) {
+							populateError(error);
+							updateDomState('show-error');
+						}
+					});
 
-					elements.secondUdmAlertButton.addEventListener(
-						'click',
-						async () => {
-							try {
-								await postUpsideDownMessage(clue);
-								updateDomState('show-riddle-2');
-							} catch (error) {
-								populateError(error);
-								updateDomState('show-error');
-							}
-						},
-					);
+					elements.secondUdmAlertButton.addEventListener('click', async () => {
+						try {
+							await postUpsideDownMessage(clue);
+							updateDomState('show-riddle-2');
+						} catch (error) {
+							populateError(error);
+							updateDomState('show-error');
+						}
+					});
 				} catch (error) {
 					populateError(error);
 					updateDomState('show-error');
@@ -742,12 +678,12 @@
 			snowStorm.vMaxY = 0;
 			snowStorm.flakeHeight = 24;
 			snowStorm.flakeWidth = 24;
+
+			// Redefine `snowStorm.snowCharacter` to randomize the flakes between a few options.
 			Object.defineProperty(snowStorm, 'snowCharacter', {
 				get() {
 					const characters = '⬬⬬⬬●●⬮';
-					return characters[
-						Math.floor(Math.random() * characters.length)
-					];
+					return characters[Math.floor(Math.random() * characters.length)];
 				},
 			});
 		</script>
