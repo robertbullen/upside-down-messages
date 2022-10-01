@@ -15,16 +15,19 @@ export interface ColorArrayAnimation extends gsap.core.Timeline {
 }
 
 export abstract class ColorArrayAnimation {
-	public static swellOn(args: { cycleDuration?: number; ledCount: number }): ColorArrayAnimation {
+	public static swellOn(args: {
+		colorCount: number;
+		cycleDuration?: number;
+	}): ColorArrayAnimation {
 		const prefix = ColorArrayAnimation.swellOn.name;
 		console.info(prefix, args);
 
-		const { cycleDuration = 5, ledCount } = args;
+		const { colorCount, cycleDuration = 5 } = args;
 
 		// Create a randomized array of colors that are all initially dark.
 		const colors: HsbColor[] = [];
-		for (let ledIndex = 0; ledIndex < ledCount; ledIndex++) {
-			const color: HsbColor = HsbColor.randomNamedColor();
+		for (let ledIndex = 0; ledIndex < colorCount; ledIndex++) {
+			const color: HsbColor = HsbColor.chooseRandomNamedColor();
 			color.brightness = 0;
 			colors.push(color);
 		}
@@ -38,8 +41,8 @@ export abstract class ColorArrayAnimation {
 		});
 
 		const turnOnPhaseDuration = cycleDuration * 0.6;
-		const unifyPhaseDuration = cycleDuration * 0.2;
-		const brightenPhaseDuration = cycleDuration * 0.2;
+		// const unifyPhaseDuration = cycleDuration * 0.2;
+		const brightenPhaseDuration = cycleDuration * 0.4;
 
 		// Phase 1: Turn on.
 		const turnOnPhaseTimeline = gsap.timeline({
@@ -54,27 +57,28 @@ export abstract class ColorArrayAnimation {
 					duration: 0,
 					ease: 'linear',
 				},
-				Math.random() * turnOnPhaseDuration,
+				(1 - Math.random() ** 4) * turnOnPhaseDuration,
 			);
 		}
 		timeline.add(turnOnPhaseTimeline);
 
 		// Phase 2: Unify.
-		const unifyColor: HsbColor = HsbColor.randomNamedColor();
-		timeline.to(colors, {
-			hue: unifyColor.hue,
-			duration: unifyPhaseDuration,
-			ease: 'linear',
-			onStart: () =>
-				console.info(
-					prefix,
-					`Unifying colors to ${unifyColor} over ${unifyPhaseDuration} seconds`,
-				),
-		});
+		// const unifyColor: HsbColor = HsbColor.randomNamedColor();
+		// timeline.to(colors, {
+		// 	hue: unifyColor.hue,
+		// 	duration: unifyPhaseDuration,
+		// 	ease: 'linear',
+		// 	onStart: () =>
+		// 		console.info(
+		// 			prefix,
+		// 			`Unifying colors to ${unifyColor} over ${unifyPhaseDuration} seconds`,
+		// 		),
+		// });
 
 		// Phase 3: Brighten.
 		timeline.to(colors, {
 			brightness: 100,
+			saturation: 50,
 			duration: brightenPhaseDuration,
 			ease: 'linear',
 			onStart: () =>
@@ -86,19 +90,19 @@ export abstract class ColorArrayAnimation {
 
 	public static letterByLetter(args: {
 		charToLedIndexHash: CharToLedIndexHash;
-		ledCount: number;
+		colorCount: number;
 		singleCharDuration?: number;
 		text: string;
 	}): ColorArrayAnimation {
 		const prefix = ColorArrayAnimation.letterByLetter.name;
 		console.info(prefix, args);
 
-		const { charToLedIndexHash, ledCount, singleCharDuration = 1.5, text } = args;
+		const { charToLedIndexHash, colorCount, singleCharDuration = 2, text } = args;
 
 		// Initialize a randomized array of colors that are all initially dark.
 		const colors: HsbColor[] = [];
-		for (let ledIndex = 0; ledIndex < ledCount; ledIndex++) {
-			const color: HsbColor = HsbColor.randomNamedColor();
+		for (let ledIndex = 0; ledIndex < colorCount; ledIndex++) {
+			const color: HsbColor = HsbColor.chooseRandomNamedColor();
 			color.brightness = 0;
 
 			colors.push(color);
@@ -107,8 +111,15 @@ export abstract class ColorArrayAnimation {
 		// Create a timeline of tweens that brighten and dim one character at a time.
 		const timeline = gsap.timeline(ColorArrayAnimation.createTimelineCallbackParams(colors));
 
+		function onStart(char: string, ledIndex?: number, color?: HsbColor): void {
+			console.info(
+				prefix,
+				`Animating '${char}' at index ${ledIndex ?? -1} with color ${color}`,
+			);
+		}
+
 		let position = 0;
-		const placeholder: object = {};
+		const nothing = {};
 		for (const char of text) {
 			// Lookup the LED index for the character. If there isn't one, assume its a space or
 			// punctuation.
@@ -116,18 +127,17 @@ export abstract class ColorArrayAnimation {
 			const color: HsbColor | undefined =
 				ledIndex !== undefined ? colors[ledIndex] : undefined;
 
-			const onStart = () => console.info(prefix, `Animating '${char}'`);
+			const onStartParams: Parameters<typeof onStart> = [char, ledIndex, color];
+
 			if (color) {
 				timeline
-					.fromTo(
+					.to(
 						color,
 						{
-							brightness: 0,
-							ease: 'linear',
-							duration: singleCharDuration / 4,
-						},
-						{
 							brightness: 100,
+							duration: singleCharDuration / 4,
+							ease: 'linear',
+							onStartParams,
 							onStart,
 						},
 						position,
@@ -143,7 +153,11 @@ export abstract class ColorArrayAnimation {
 					);
 				position += singleCharDuration;
 			} else {
-				timeline.to(placeholder, { onStart });
+				// Add a tween simply for logging the unregistered character.
+				timeline.to(nothing, {
+					onStart,
+					onStartParams,
+				});
 				position += singleCharDuration / 2;
 			}
 		}
@@ -152,19 +166,19 @@ export abstract class ColorArrayAnimation {
 	}
 
 	public static scrollingRainbow(args: {
+		colorCount: number;
 		cycleDuration?: number;
-		ledCount: number;
 		repeat?: number;
 	}): ColorArrayAnimation {
 		const prefix = ColorArrayAnimation.scrollingRainbow.name;
 		console.info(prefix, args);
 
-		const { cycleDuration = 5, ledCount, repeat = -1 } = args;
+		const { colorCount, cycleDuration = 5, repeat = 0 } = args;
 
 		// Initialize a rainbow of colors over the full length of the LED array.
 		const colors: HsbColor[] = [];
-		for (let ledIndex = 0; ledIndex < ledCount; ledIndex++) {
-			colors.push(new HsbColor((ledIndex / ledCount) * 360, 100, 100));
+		for (let ledIndex = 0; ledIndex < colorCount; ledIndex++) {
+			colors.push(new HsbColor((ledIndex / colorCount) * 360, 100, 100));
 		}
 
 		// Create a single tween that continuously repeats a 360-degree hue cycling of every LED
@@ -175,8 +189,8 @@ export abstract class ColorArrayAnimation {
 			delay: 0,
 			duration: cycleDuration,
 			ease: 'linear',
-			onRepeat: () => console.info(prefix, 'Repeating scroll'),
-			onStart: () => console.info(prefix, 'Starting scroll'),
+			onRepeat: (): void => console.info(prefix, 'Repeating scroll'),
+			onStart: (): void => console.info(prefix, 'Starting scroll'),
 			repeat,
 		});
 	}

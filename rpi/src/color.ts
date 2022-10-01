@@ -84,8 +84,8 @@ export class HsbColor extends Color {
 		return new HsbColor(300, 100, 100, 'magenta');
 	}
 
-	public static randomNamedColor(): HsbColor {
-		return HsbColor._randomNamedColorFactory()();
+	public static chooseRandomNamedColor(): HsbColor {
+		return HsbColor._chooseRandomNamedColorFactory()();
 	}
 
 	public constructor(
@@ -111,7 +111,7 @@ export class HsbColor extends Color {
 		return `hsb(${this.hue}, ${this.saturation}, ${this.brightness})`;
 	}
 
-	private static readonly _randomNamedColorFactory = uniqueRandomArray([
+	private static readonly _chooseRandomNamedColorFactory = uniqueRandomArray([
 		HsbColor.red,
 		HsbColor.orange,
 		HsbColor.yellow,

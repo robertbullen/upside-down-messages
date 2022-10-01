@@ -21,12 +21,12 @@ export abstract class CharToLedIndexHash {
 			);
 	}
 
-	public static async loadFromFile(
-		filePath: PathLike,
-		ledCount: number,
-	): Promise<CharToLedIndexHash> {
-		return CharToLedIndexHash.schema(ledCount).validate(
-			JSON.parse(await readFile(filePath, 'utf8')),
-		);
+	public static loadFromFile(filePath: PathLike, ledCount: number): Promise<CharToLedIndexHash> {
+		return readFile(filePath, 'utf8')
+			.then((json: string): unknown => JSON.parse(json))
+			.then(
+				(value: unknown): Promise<CharToLedIndexHash> =>
+					CharToLedIndexHash.schema(ledCount).validate(value),
+			);
 	}
 }

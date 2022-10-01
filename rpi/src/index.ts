@@ -1,4 +1,3 @@
-import uniqueRandomArray from 'unique-random-array';
 import * as url from 'url';
 import * as util from 'util';
 import { Message } from '../../lib/messages.js';
@@ -6,17 +5,21 @@ import { ColorArrayAnimation } from './animations.js';
 import { CharToLedIndexHash } from './char-to-led-index-hash.js';
 import { Color } from './color.js';
 import { env } from './environment.js';
+import { FillerMessages } from './filler-messages.js';
 import { LedController } from './led-controller.js';
 import { receiveMessages } from './message-queue.js';
 
 util.inspect.defaultOptions.depth = Number.POSITIVE_INFINITY;
+
+function sleep(milliseconds: number): Promise<number> {
+	return new Promise((resolve): void => void setTimeout(resolve, 1000, milliseconds));
+}
 
 async function main(): Promise<void> {
 	const prefix: string = main.name;
 
 	// Load external assets.
 	// TODO: Load from CLI argument.
-
 	const charToLedIndexHash = await CharToLedIndexHash.loadFromFile(
 		new url.URL('char-to-led-index-hash.json', import.meta.url),
 		env.LED_COUNT,
@@ -24,37 +27,21 @@ async function main(): Promise<void> {
 	console.info(prefix, { charToLedIndexHash });
 
 	// TODO: Load from CLI argument.
-	const fodderMessages = [
-		'are you there',
-		'friends do not lie',
-		'help me',
-		'i am the monster',
-		'i am trapped',
-		'i see you',
-		'join us',
-		'mouthbreather',
-		'run',
-		'the gate is open',
-		'the mind flayer sees you',
-		'vecna lives',
-		'we are nerds and freaks',
-		'you are the monster',
-		'you have lost',
-		'you will break',
-	];
-	console.info(prefix, { fodderMessages });
-
-	const randomFodderMessage = uniqueRandomArray(fodderMessages);
+	const fillerMessages = await FillerMessages.loadFromFile(
+		new url.URL('filler-messages.json', import.meta.url),
+	);
+	console.info(prefix, { fillerMessages });
 
 	// Initialize the LED controller and declare a convenience function for rendering to it.
 	const ledMask = new Array<boolean>(env.LED_COUNT).fill(false, 0, 9).fill(true, 9);
 	const ledController = new LedController(env.LED_COUNT, ledMask);
 
-	async function renderAnimation(animation: ColorArrayAnimation): Promise<void> {
-		await animation.eventCallback('onUpdate', (colors: Color[]): void => {
-			ledController.render(colors);
-		});
-		ledController.reset();
+	function renderAnimation(animation: ColorArrayAnimation): Promise<ColorArrayAnimation> {
+		return animation
+			.eventCallback('onUpdate', (colors: Color[]): void => {
+				ledController.render(colors);
+			})
+			.then((): void => ledController.reset());
 	}
 
 	try {
@@ -68,39 +55,35 @@ async function main(): Promise<void> {
 		// Show a startup animation.
 		await renderAnimation(
 			ColorArrayAnimation.scrollingRainbow({
+				colorCount: env.LED_COUNT,
 				cycleDuration: 5,
-				ledCount: env.LED_COUNT,
-				repeat: 1,
 			}),
 		);
 
-		// Poll for messages on the SQS queue.
+		// Poll for messages on the queue.
 		for await (const message of receiveMessages<Message>(env.SQS_QUEUE_URL, Message.schema())) {
 			console.info(prefix, { message });
 
-			// Animate the message. Fill emptiness with fodder sometimes.
+			// Animate the message. Fill emptiness with random messages sometimes.
 			let text: string | undefined = message?.text;
-			if (!text && !!Math.round(Math.random())) text = randomFodderMessage();
+			if (!text && !!Math.round(Math.random())) {
+				text = fillerMessages.chooseRandomMessage();
+			}
 
 			if (text) {
 				// Show a preamble.
-				await renderAnimation(
-					ColorArrayAnimation.swellOn({
-						cycleDuration: 5,
-						ledCount: env.LED_COUNT,
-					}),
-				);
-				await new Promise((resolve) => setTimeout(resolve, 1000));
+				await renderAnimation(ColorArrayAnimation.swellOn({ colorCount: env.LED_COUNT }));
+				await sleep(1500);
 
 				// Show the message itself.
 				await renderAnimation(
 					ColorArrayAnimation.letterByLetter({
 						charToLedIndexHash,
-						ledCount: env.LED_COUNT,
+						colorCount: env.LED_COUNT,
 						text,
 					}),
 				);
-				await new Promise((resolve) => setTimeout(resolve, 1000));
+				await sleep(1500);
 			}
 		}
 	} finally {
