@@ -3,6 +3,11 @@
 	"subtitle": "Marcel's Muse",
 	"question": "Oct 12, 1969 - A radio DJ started one of the greatest conspiracy theories in rock and roll by saying that a member of a band was dead and a lookalike imposter was filling in for him. What was the band's name?",
 	"answers": ["the beatles", "beatles"],
-	"riddleLines": ["Riddle line one", "Riddle line ___", "Riddle line three", "Riddle line ____"],
-	"upsideDownMessage": "two four"
+	"riddleLines": [
+		"Mike, Lucas, Dustin, and Will love games",
+		"But not the __________ kind",
+		"Too bad, they'd have the perfect number",
+		"To play the game called ____ ______"
+	],
+	"upsideDownMessage": "schoolyard four square"
 }

@@ -1,8 +1,13 @@
 {
 	"title": "Chapter Five",
-	"subtitle": "Emily's Enchantment",
-	"question": "You'll never have to remind a horse to excuse itself for this bodily function because it's incapable of doing it. What bodily function can't a horse do?",
+	"subtitle": "Emily's Equine",
+	"question": "You'll never have to remind a horse to excuse itself for bad manners for doing this bodily function because it's incapable of doing it. What bodily function can't a horse do?",
 	"answers": ["burp", "belch"],
-	"riddleLines": ["Riddle line one", "Riddle line ___", "Riddle line three", "Riddle line ____"],
-	"upsideDownMessage": "two four"
+	"riddleLines": [
+		"The Russians are mining ________",
+		"And using them in their secret underground lab",
+		"At the center of an undeveloped _____",
+		"In the __________ corner of Hawkins"
+	],
+	"upsideDownMessage": "diamonds square southeast"
 }

@@ -1,8 +1,13 @@
 {
 	"title": "Chapter Two",
-	"subtitle": "Grace's Grounder",
+	"subtitle": "Grace's Creature",
 	"question": "What animal shouldn't get wet for fear of a fungus infection?",
 	"answers": ["chinchilla"],
-	"riddleLines": ["Roses are ___", "violets are blue", "Boogers are _____", "Poop is brown"],
-	"upsideDownMessage": "red green"
+	"riddleLines": [
+		"Barb was last seen sitting by a ____",
+		"Before the Demogorgon snatched her",
+		"They passed through the *closest* ____",
+		"Where she met her ultimate fate"
+	],
+	"upsideDownMessage": "pool gate"
 }
