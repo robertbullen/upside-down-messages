@@ -1,13 +1,8 @@
 {
 	"title": "Chapter One",
-	"subtitle": "Brooke's Idol",
+	"subtitle": "Brooke's Baddie",
 	"question": "In The Hunger Games story, each district sends two tributes to compete to the death. From which district did tribute Johanna Mason originate?",
 	"answers": ["seven", "7"],
-	"riddleLines": [
-		"Roses are ___",
-		"violets are blue",
-		"Boogers are _____",
-		"Poop is brown"
-	],
+	"riddleLines": ["Roses are ___", "violets are blue", "Boogers are _____", "Poop is brown"],
 	"upsideDownMessage": "red green"
 }

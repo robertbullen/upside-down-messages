@@ -1,13 +1,8 @@
 {
 	"title": "Chapter Two",
-	"subtitle": "Grace's Creature",
-	"question": "What animal can't get wet?",
+	"subtitle": "Grace's Grounder",
+	"question": "What animal shouldn't get wet for fear of a fungus infection?",
 	"answers": ["chinchilla"],
-	"riddleLines": [
-		"Roses are ___",
-		"violets are blue",
-		"Boogers are _____",
-		"Poop is brown"
-	],
+	"riddleLines": ["Roses are ___", "violets are blue", "Boogers are _____", "Poop is brown"],
 	"upsideDownMessage": "red green"
 }

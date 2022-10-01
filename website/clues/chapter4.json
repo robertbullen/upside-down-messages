@@ -1,0 +1,8 @@
+{
+	"title": "Chapter Four",
+	"subtitle": "Ruby's Reel",
+	"question": "What is the title of the film featuring Agent Michael Scarn, a robot butler, and Scarn's archenemy Goldenface?",
+	"answers": ["threat level midnight"],
+	"riddleLines": ["Riddle line one", "Riddle line ___", "Riddle line three", "Riddle line ____"],
+	"upsideDownMessage": "two four"
+}
