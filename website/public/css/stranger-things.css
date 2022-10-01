@@ -1,0 +1,227 @@
+/* Import the Stranger Things title font: ITC Benguiat. */
+@import url('https://use.typekit.net/itu2pzq.css');
+
+/* Override enough Bootstrap CSS variables to get the job done. */
+:root {
+	--bs-black-rgb: 29, 7, 7;
+	--bs-red-rgb: 255, 20, 20;
+
+	--bs-blue-rgb: 58, 94, 228;
+	--bs-purple-rgb: 118, 105, 235;
+	--bs-green-rgb: 143, 206, 0;
+	--bs-pink-rgb: 208, 95, 175;
+
+	--bs-white-rgb: 255, 255, 255;
+	--bs-white: rgb(var(--bs-white-rgb));
+	--bs-black-rgb: 29, 7, 7;
+	--bs-black: rgb(var(--bs-black-rgb));
+
+	/* --bs-blue: #0d6efd; */
+	/* --bs-indigo: #6610f2; */
+	/* --bs-purple: #6f42c1; */
+	/* --bs-pink: #d63384; */
+	/* --bs-red: #dc3545; */
+	/* --bs-orange: #fd7e14; */
+	/* --bs-yellow: #ffc107; */
+	/* --bs-green: #198754; */
+	/* --bs-teal: #20c997; */
+	/* --bs-cyan: #0dcaf0; */
+	/* --bs-black: #000; */
+
+	/* --bs-gray: #6c757d; */
+	/* --bs-gray-dark: #343a40; */
+	/* --bs-gray-100: #f8f9fa; */
+	/* --bs-gray-200: #e9ecef; */
+	/* --bs-gray-300: #dee2e6; */
+	/* --bs-gray-400: #ced4da; */
+	/* --bs-gray-500: #adb5bd; */
+	/* --bs-gray-600: #6c757d; */
+	/* --bs-gray-700: #495057; */
+	/* --bs-gray-800: #343a40; */
+	/* --bs-gray-900: #212529; */
+
+	--bs-primary-rgb: var(--bs-red-rgb);
+	--bs-secondary-rgb: var(--bs-blue-rgb);
+	--bs-success-rgb: var(--bs-green-rgb);
+	--bs-info-rgb: var(--bs-pink-rgb);
+	/* --bs-warning-rgb: 255,193,7; */
+	--bs-danger-rgb: var(--bs-purple-rgb);
+	/* --bs-light-rgb: 248,249,250; */
+	/* --bs-dark-rgb: 33,37,41; */
+
+	--bs-primary: rgb(var(--bs-primary-rgb));
+	--bs-secondary: rgb(var(--bs-secondary-rgb));
+	--bs-success: rgb(var(--bs-success-rgb));
+	--bs-info: rgb(var(--bs-info-rgb));
+	/* --bs-warning: #ffc107; */
+	--bs-danger: rgb(var(--bs-danger-rgb));
+	/* --bs-light: #f8f9fa; */
+	/* --bs-dark: #212529; */
+
+	--bs-body-color-rgb: var(--bs-white-rgb);
+	--bs-body-bg-rgb: var(--bs-black-rgb);
+
+	/* --bs-font-sans-serif: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"; */
+	/* --bs-font-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; */
+	/* --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0)); */
+	--bs-body-font-family: itc-benguiat, serif;
+	/* --bs-body-font-size: 1rem; */
+	/* --bs-body-font-weight: 400; */
+	/* --bs-body-line-height: 1.5; */
+	--bs-body-color: var(--bs-white);
+	--bs-body-bg: transparent;
+	/* --bs-border-width: 1px; */
+	/* --bs-border-style: solid; */
+	/* --bs-border-color: #dee2e6; */
+	/* --bs-border-color-translucent: rgba(0, 0, 0, 0.175); */
+	--bs-border-radius: 0;
+	/* --bs-border-radius-sm: 0.25rem; */
+	/* --bs-border-radius-lg: 0.5rem; */
+	/* --bs-border-radius-xl: 1rem; */
+	/* --bs-border-radius-2xl: 2rem; */
+	/* --bs-border-radius-pill: 50rem; */
+	/* --bs-link-color: #0d6efd; */
+	/* --bs-link-hover-color: #0a58ca; */
+	/* --bs-code-color: #d63384; */
+	/* --bs-highlight-bg: #fff3cd; */
+}
+
+.form-control {
+	border-radius: var(--bs-border-radius);
+	border: none;
+	box-shadow: 0 0 0.25rem var(--bs-primary);
+	color: var(--bs-black);
+}
+.form-control:focus {
+	border-color: var(--bs-primary);
+	box-shadow: 0 0 1rem var(--bs-primary);
+	color: var(--bs-black);
+	outline: 0;
+}
+
+.btn {
+	--bs-btn-active-bg: var(--bs-black);
+	--bs-btn-active-border-color: var(--bs-btn-border-color);
+	--bs-btn-active-color: var(--bs-white);
+	--bs-btn-border-color: var(--bs-btn-bg);
+	--bs-btn-border-radius: var(--bs-border-radius);
+	--bs-btn-border-width: 1px;
+	--bs-btn-color: var(--bs-white);
+	--bs-btn-box-shadow: none;
+	--bs-btn-focus-box-shadow: 0 0 1rem var(--bs-btn-bg);
+	--bs-btn-font-weight: bold;
+	--bs-btn-hover-bg: var(--bs-btn-bg);
+	--bs-btn-hover-border-color: var(--bs-btn-bg);
+	--bs-btn-hover-color: var(--bs-btn-color);
+}
+.btn-primary {
+	--bs-btn-bg: var(--bs-primary);
+	--bs-btn-active-border-color: var(--bs-primary);
+	text-transform: uppercase;
+}
+.btn-outline-secondary {
+	--bs-btn-active-bg: var(--bs-secondary);
+	--bs-btn-bg: var(--bs-white);
+	--bs-btn-border-color: var(--bs-white);
+	--bs-btn-color: var(--bs-secondary);
+}
+.btn-outline-success {
+	--bs-btn-active-bg: var(--bs-success);
+	--bs-btn-bg: var(--bs-white);
+	--bs-btn-border-color: var(--bs-white);
+	--bs-btn-color: var(--bs-success);
+}
+.btn-outline-info {
+	--bs-btn-active-bg: var(--bs-info);
+	--bs-btn-bg: var(--bs-white);
+	--bs-btn-border-color: var(--bs-white);
+	--bs-btn-color: var(--bs-info);
+}
+.btn-outline-danger {
+	--bs-btn-active-bg: var(--bs-danger);
+	--bs-btn-bg: var(--bs-white);
+	--bs-btn-border-color: var(--bs-white);
+	--bs-btn-color: var(--bs-danger);
+}
+.btn:hover {
+	box-shadow: 0 0 1rem var(--bs-btn-bg);
+}
+.btn:active {
+	box-shadow: 0 0 0.5rem var(--bs-btn-bg);
+}
+
+.alert {
+	--bs-alert-color: var(--bs-white);
+	--bs-alert-margin-bottom: 0;
+	border-radius: var(--bs-border-radius);
+	box-shadow: 0 0 2rem var(--bs-alert-border-color);
+}
+.alert-secondary {
+	--bs-alert-bg: rgba(var(--bs-secondary-rgb), 0.8);
+	--bs-alert-border-color: var(--bs-secondary);
+}
+.alert-success {
+	--bs-alert-bg: rgba(var(--bs-success-rgb), 0.8);
+	--bs-alert-border-color: var(--bs-success);
+}
+.alert-info {
+	--bs-alert-bg: rgba(var(--bs-info-rgb), 0.8);
+	--bs-alert-border-color: var(--bs-info);
+}
+.alert-danger {
+	--bs-alert-bg: rgba(var(--bs-danger-rgb), 0.8);
+	--bs-alert-border-color: var(--bs-danger);
+}
+
+/* Define some general properties for this page. */
+html {
+	background-blend-mode: normal;
+	background-color: var(--bs-black);
+	background-image: url('../img/background.jpg');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	font-size: 40px;
+	min-height: 100vh;
+	scroll-behavior: smooth;
+}
+
+.hidden {
+	display: none;
+}
+
+div#spinner > div {
+	height: 100vh;
+}
+div#spinner .spinner-border {
+	height: 5rem;
+	width: 5rem;
+}
+
+section {
+	margin: 4rem 0;
+	text-align: center;
+}
+section > div {
+	display: inline-block;
+}
+section > div > * {
+	text-align: initial;
+}
+
+section#title h1,
+section#title h2 {
+	color: var(--bs-primary);
+	font-weight: bold;
+	line-height: 1;
+	margin: 0;
+	text-align: center;
+	text-transform: uppercase;
+}
+h1 {
+	border-bottom: 0.0625rem solid var(--bs-primary);
+}
+
+p:last-child {
+	margin-bottom: 0;
+}

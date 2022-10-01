@@ -7,7 +7,7 @@
 	"name": "@upside-down-messages/website",
 	"scripts": {
 		"prepare": "npx crlf --set=LF node_modules/.bin/live-server",
-		"start": "live-server --verbose"
+		"start": "live-server --verbose public/"
 	},
 	"version": "1.0.0"
 }

@@ -137,16 +137,14 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 					origin: new cloudfrontOrigins.HttpOrigin(
 						cdk.Fn.parseDomainName(apiFunctionUrl.url),
 					),
-					viewerProtocolPolicy:
-						cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
+					viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
 				},
 			},
 			defaultBehavior: {
 				allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
 				cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
 				origin: new cloudfrontOrigins.S3Origin(websiteBucket),
-				viewerProtocolPolicy:
-					cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+				viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
 			},
 			logBucket: loggingBucket,
 			logFilePrefix: `${this.stackName}/cloudfront`,
@@ -155,11 +153,7 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		});
 	}
 
-	private createIamRpiAccessKey({
-		messageQueue,
-	}: {
-		messageQueue: sqs.Queue;
-	}): iam.AccessKey {
+	private createIamRpiAccessKey({ messageQueue }: { messageQueue: sqs.Queue }): iam.AccessKey {
 		const userId = createId('RpiUser');
 		const user = new iam.User(this, userId, { userName: userId });
 		user.addToPolicy(
@@ -284,18 +278,10 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 			websiteIndexDocument: 'index.html',
 		});
 
-		new s3Deployment.BucketDeployment(
-			this,
-			createId('WebsiteBucketDeployment'),
-			{
-				destinationBucket: bucket,
-				sources: [
-					s3Deployment.Source.asset('../website', {
-						exclude: ['node_modules', 'package.json', 'yarn.lock'],
-					}),
-				],
-			},
-		);
+		new s3Deployment.BucketDeployment(this, createId('WebsiteBucketDeployment'), {
+			destinationBucket: bucket,
+			sources: [s3Deployment.Source.asset('../website/public')],
+		});
 
 		return bucket;
 	}
@@ -319,11 +305,7 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		});
 	}
 
-	private importRoute53HostedZone({
-		domainName,
-	}: {
-		domainName: string;
-	}): route53.IHostedZone {
+	private importRoute53HostedZone({ domainName }: { domainName: string }): route53.IHostedZone {
 		return route53.HostedZone.fromLookup(this, 'HostedZone', {
 			domainName,
 		});
@@ -334,11 +316,7 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 	}: {
 		loggingBucketName: string;
 	}): s3.IBucket {
-		return s3.Bucket.fromBucketName(
-			this,
-			createId('LoggingBucket'),
-			loggingBucketName,
-		);
+		return s3.Bucket.fromBucketName(this, createId('LoggingBucket'), loggingBucketName);
 	}
 }
 

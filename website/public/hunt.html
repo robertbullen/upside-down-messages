@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Stranger Things Scavenger Hunt</title>
+
+		<!-- Include Bootstrap. -->
+		<link
+			crossorigin="anonymous"
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+			integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+			rel="stylesheet"
+		/>
+
+		<!-- Include custom CSS. -->
+		<link href="css/stranger-things.css" rel="stylesheet" />
+	</head>
+	<body>
+		<div class="hidden" id="spinner">
+			<div class="d-flex align-items-center justify-content-center">
+				<span class="spinner-border text-primary" role="status"></span>
+			</div>
+		</div>
+
+		<main class="container hidden">
+			<section id="title">
+				<div>
+					<h1>Title</h1>
+					<h2>Subtitle</h2>
+				</div>
+			</section>
+
+			<section id="error">
+				<div class="alert alert-danger">
+					<p>Uh oh! A problem occurred.</p>
+					<p>
+						Error:
+						<span id="error-message">Message goes here.</span>
+					</p>
+				</div>
+			</section>
+
+			<section id="question">
+				<div>
+					<p>Question goes here?</p>
+					<form autocomplete="off">
+						<div class="hstack gap-3 mx-auto">
+							<input
+								class="form-control stranger"
+								id="answer"
+								name="answer"
+								placeholder="Answer"
+								required
+								type="text"
+							/>
+							<button class="btn btn-primary" type="submit">Submit</button>
+						</div>
+					</form>
+				</div>
+			</section>
+
+			<section id="correct-alert">
+				<div class="alert alert-success" role="alert">
+					<p>
+						That's correct! You guys are smart enough to be in the Hellfire Club. Ready
+						for your riddle?
+					</p>
+
+					<button class="btn btn-outline-success">Show the riddle</button>
+				</div>
+			</section>
+
+			<section id="incorrect-alert">
+				<div class="alert alert-danger" id="incorrect-alert" role="alert">
+					<p>That's incorrect. Has your mind been flayed or something?</p>
+
+					<button class="btn btn-outline-danger">Try again</button>
+				</div>
+			</section>
+
+			<section id="riddle">
+				<div>
+					<ul class="list-unstyled">
+						<li>Riddle line one</li>
+						<li>Riddle line two</li>
+						<li>Riddle line three</li>
+					</ul>
+				</div>
+			</section>
+
+			<section id="first-udm-alert">
+				<div class="alert alert-secondary">
+					<p>
+						Only Will knows the missing pieces of the riddle! Head back to the Christmas
+						lights so he can communicate from the Upside Down, then click the button.
+					</p>
+
+					<button class="btn btn-outline-secondary">Tell us, Will</button>
+				</div>
+			</section>
+
+			<section id="second-udm-alert">
+				<div class="alert alert-info">
+					<p>
+						Watch the Christmas lights! Will is going to tell you the missing words any
+						second now.
+					</p>
+
+					<button class="btn btn-outline-info">Show us again, Will</button>
+				</div>
+			</section>
+		</main>
+
+		<script src="js/hunt.js"></script>
+		<script src="js/snowstorm-min.js"></script>
+		<script src="js/snowstorm-customization.js"></script>
+	</body>
+</html>
