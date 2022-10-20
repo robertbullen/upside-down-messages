@@ -14,10 +14,20 @@ let badWordsFilter: BadWordsFilter;
  * @returns `true` if profanity is found anywhere in `text`; `false` otherwise.
  */
 export function isProfane(text: string): boolean {
+	const prefix: string = isProfane.name;
+	console.info(prefix, { text });
+
 	badWordsFilter ??= new BadWordsFilter();
-	return (
-		badWordsFilter.isProfane(text) ||
-		leoProfanity.check(text) ||
-		swearjar.profane(text)
-	);
+
+	const detections = {
+		badWords: badWordsFilter.isProfane(text),
+		leoProfanity: leoProfanity.check(text),
+		swearjar: swearjar.profane(text),
+	};
+	console.info(prefix, { detections });
+
+	const result: boolean = detections.badWords || detections.leoProfanity || detections.swearjar;
+	console.info(prefix, { result });
+
+	return result;
 }

@@ -17,6 +17,11 @@
   resolved "https://registry.yarnpkg.com/@types/leo-profanity/-/leo-profanity-1.5.0.tgz#f7264c268af130f181e46a10b463df41614625ab"
   integrity sha512-/DRIgKYR7j41m+RzVjmMSVwlcsugpjmpe31NDDDI/K7qqz4T6h5tXxPJ3u1Du04XgfHYVLdpf4N4GCBxWl6+6A==
 
+"@types/node@^18.11.3":
+  version "18.11.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.3.tgz#78a6d7ec962b596fc2d2ec102c4dd3ef073fea6a"
+  integrity sha512-fNjDQzzOsZeKZu5NATgXUPsaFaTxeRgFXoosrHivTl8RGeV733OLawXsGfEk9a8/tySyZUyiZ6E8LcjPFZ2y1A==
+
 agent-base@6:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-6.0.2.tgz#49fff58577cfee3f37176feab4c22e00f86d7f77"

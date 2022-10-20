@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 
 export interface Environment {
+	OPTION_PERFORM_TEXT_TO_SPEECH: boolean;
 	S3_WEBSITE_BUCKET_NAME: string;
 	SSM_TWILIO_CREDS_PARMETER_NAME: string;
 	SMS_DESTINATION_PHONE: string;
@@ -13,6 +14,7 @@ export class Environment {
 	public static schema(): yup.ObjectSchema<Environment> {
 		return yup
 			.object({
+				OPTION_PERFORM_TEXT_TO_SPEECH: yup.boolean().required(),
 				S3_WEBSITE_BUCKET_NAME: yup.string().required(),
 				SSM_TWILIO_CREDS_PARMETER_NAME: yup.string().required(),
 				SMS_DESTINATION_PHONE: yup.string().required(),

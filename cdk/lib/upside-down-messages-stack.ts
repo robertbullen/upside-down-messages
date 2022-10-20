@@ -19,6 +19,7 @@ export interface UpsideDownMessagesStackProps {
 	domainName: string;
 	env: Required<cdk.Environment>;
 	loggingBucketName: string;
+	optionPerformTextToSpeech: boolean;
 	smsDestinationPhone: string;
 	smsSourcePhone: string;
 	subdomain: string;
@@ -32,6 +33,7 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 			domainName,
 			env,
 			loggingBucketName,
+			optionPerformTextToSpeech,
 			smsDestinationPhone,
 			smsSourcePhone,
 			subdomain,
@@ -67,6 +69,7 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		const { apiFunctionUrl } = this.createLambdaApiFunction({
 			fullDomainName,
 			messageQueue,
+			optionPerformTextToSpeech,
 			smsDestinationPhone,
 			smsSourcePhone,
 			twilioCredsParameter,
@@ -86,16 +89,12 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 		this.createRoute53WebsiteARecord({ distribution, subdomain, zone });
 
 		// Export the values needed as environment variables on the Raspberry Pi.
-		new cdk.CfnOutput(this, 'awsAccessKeyId', {
-			value: accessKey.accessKeyId,
-		});
+		new cdk.CfnOutput(this, 'awsAccessKeyId', { value: accessKey.accessKeyId });
 		new cdk.CfnOutput(this, 'awsDefaultRegion', { value: env.region });
 		new cdk.CfnOutput(this, 'awsSecretAccessKey', {
 			value: accessKey.secretAccessKey.unsafeUnwrap(),
 		});
-		new cdk.CfnOutput(this, 'sqsQueueUrl', {
-			value: messageQueue.queueUrl,
-		});
+		new cdk.CfnOutput(this, 'sqsQueueUrl', { value: messageQueue.queueUrl });
 	}
 
 	private createAcmCertificate({
@@ -173,6 +172,7 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 	private createLambdaApiFunction({
 		fullDomainName,
 		messageQueue,
+		optionPerformTextToSpeech,
 		smsDestinationPhone,
 		smsSourcePhone,
 		twilioCredsParameter,
@@ -180,12 +180,16 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 	}: {
 		fullDomainName: string;
 		messageQueue: sqs.Queue;
+		optionPerformTextToSpeech: boolean;
 		smsDestinationPhone: string;
 		smsSourcePhone: string;
 		twilioCredsParameter: ssm.StringParameter;
 		websiteBucket: s3.Bucket;
 	}): { apiFunction: lambda.Function; apiFunctionUrl: lambda.FunctionUrl } {
-		const environment: LambdaEnvironment = {
+		const id = createId('ApiFunction');
+
+		const lambdaEnvironment: LambdaEnvironment = {
+			OPTION_PERFORM_TEXT_TO_SPEECH: optionPerformTextToSpeech,
 			S3_WEBSITE_BUCKET_NAME: websiteBucket.bucketName,
 			SSM_TWILIO_CREDS_PARMETER_NAME: twilioCredsParameter.parameterName,
 			SMS_DESTINATION_PHONE: smsDestinationPhone,
@@ -193,8 +197,40 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 			SQS_QUEUE_URL: messageQueue.queueUrl,
 			WEBSITE_BASE_URL: `https://${fullDomainName}/`,
 		};
+		const environment: Record<string, string> = {};
+		for (const key in lambdaEnvironment) {
+			if (Object.prototype.hasOwnProperty.call(lambdaEnvironment, key)) {
+				environment[key] = lambdaEnvironment[key as keyof LambdaEnvironment].toString();
+			}
+		}
 
-		const id = createId('ApiFunction');
+		const initialPolicy: iam.PolicyStatement[] = [
+			new iam.PolicyStatement({
+				actions: ['s3:PutObject'],
+				effect: iam.Effect.ALLOW,
+				resources: [websiteBucket.arnForObjects('messages/*')],
+			}),
+			new iam.PolicyStatement({
+				actions: ['sqs:GetQueueAttributes', 'sqs:SendMessage'],
+				effect: iam.Effect.ALLOW,
+				resources: [messageQueue.queueArn],
+			}),
+			new iam.PolicyStatement({
+				actions: ['ssm:GetParameter'],
+				effect: iam.Effect.ALLOW,
+				resources: [twilioCredsParameter.parameterArn],
+			}),
+		];
+		if (optionPerformTextToSpeech) {
+			initialPolicy.push(
+				new iam.PolicyStatement({
+					actions: ['polly:SynthesizeSpeech'],
+					effect: iam.Effect.ALLOW,
+					resources: ['*'],
+				}),
+			);
+		}
+
 		const apiFunction = new lambdaNodeJs.NodejsFunction(this, id, {
 			architecture: lambda.Architecture.ARM_64,
 			// bundling: {
@@ -202,30 +238,9 @@ export class UpsideDownMessagesStack extends cdk.Stack {
 			// 	sourceMap: true,
 			// },
 			entry: '../lambda/src/index.ts',
-			environment: environment as unknown as Record<string, string>,
+			environment,
 			functionName: id,
-			initialPolicy: [
-				new iam.PolicyStatement({
-					actions: ['polly:SynthesizeSpeech'],
-					effect: iam.Effect.ALLOW,
-					resources: ['*'],
-				}),
-				new iam.PolicyStatement({
-					actions: ['s3:PutObject'],
-					effect: iam.Effect.ALLOW,
-					resources: [websiteBucket.arnForObjects('audio/*')],
-				}),
-				new iam.PolicyStatement({
-					actions: ['sqs:GetQueueAttributes', 'sqs:SendMessage'],
-					effect: iam.Effect.ALLOW,
-					resources: [messageQueue.queueArn],
-				}),
-				new iam.PolicyStatement({
-					actions: ['ssm:GetParameter'],
-					effect: iam.Effect.ALLOW,
-					resources: [twilioCredsParameter.parameterArn],
-				}),
-			],
+			initialPolicy,
 			runtime: lambda.Runtime.NODEJS_16_X,
 			memorySize: 256,
 		});

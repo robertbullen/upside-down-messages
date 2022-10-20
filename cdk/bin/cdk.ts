@@ -17,13 +17,12 @@ const props: UpsideDownMessagesStackProps = {
 		account: env.UDM_AWS_ACCOUNT,
 		region: env.UDM_AWS_REGION,
 	},
-	loggingBucketName: env.UDM_LOGGING_BUCKET_NAME,
+	loggingBucketName: env.UDM_S3_LOGGING_BUCKET_NAME,
+	optionPerformTextToSpeech: env.UDM_OPTION_PERFORM_TEXT_TO_SPEECH,
 	subdomain: env.UDM_SUBDOMAIN,
 	smsDestinationPhone: env.UDM_SMS_DESTINATION_PHONE,
 	smsSourcePhone: env.UDM_SMS_SOURCE_PHONE,
-	twilioCreds: await TwilioCredentials.loadFromFile(
-		env.UDM_TWILIO_CREDS_FILE_PATH,
-	),
+	twilioCreds: await TwilioCredentials.loadFromFile(env.UDM_TWILIO_CREDS_FILE_PATH),
 };
 
 new UpsideDownMessagesStack(app, props);
