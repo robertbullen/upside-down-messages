@@ -4,10 +4,11 @@
 	"question": "In The Hunger Games story, each district sends two tributes to compete to the death. From which district did tribute Johanna Mason originate?",
 	"answers": ["seven", "7"],
 	"riddleLines": [
+		"Don't get _____ed by this clue...",
 		"Bob the Brain was very clever",
 		"Unfortunately he's gone forever",
-		"Pay homage at his place of ____",
+		"Pay homage at his place of rest",
 		"At the ________ in the northwest"
 	],
-	"upsideDownMessage": "rest cemetary"
+	"upsideDownMessage": "stump cemetary"
 }

@@ -30,13 +30,14 @@ export async function* receiveMessages<T>(
 			yield undefined;
 		} else {
 			for (const message of receiveMessageOutput.Messages) {
+				const result: T = schema.validateSync(JSON.parse(message.Body ?? ''));
+
 				const deleteMessageInput: AWS.SQS.DeleteMessageRequest = {
 					QueueUrl: queueUrl,
 					ReceiptHandle: message.ReceiptHandle || '',
 				};
 				await sqs.deleteMessage(deleteMessageInput).promise();
 
-				const result: T = schema.validateSync(JSON.parse(message.Body ?? ''));
 				yield result;
 			}
 		}

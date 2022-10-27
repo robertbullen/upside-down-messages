@@ -1,38 +1,115 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 	<head>
-		<link rel="stylesheet" href="styles.css" />
+		<meta charset="utf-8" />
+		<title>Will's Messages From the Upside Down</title>
+
+		<!-- Set the favicon. -->
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+		<link rel="manifest" href="/site.webmanifest" />
+
+		<!-- Include custom CSS. -->
+		<link href="css/stranger-things.css" rel="stylesheet" />
 	</head>
 	<body>
-		<h1>Upside Down Messages</h1>
+		<main class="container-fluid container-lg hidden">
+			<section class="text-center" id="title">
+				<div class="d-inline-block mx-auto">
+					<h1>Will's Messages</h1>
+					<h2>From the Upside Down</h2>
+				</div>
+			</section>
 
-		<form id="message-form">
-			<input name="text" type="text" />
-			<button type="submit">Submit</button>
-		</form>
+			<section id="error">
+				<div class="alert alert-danger">
+					<h3>Not Good!</h3>
+					<p>Error: <span id="error-message">Message goes here.</span></p>
+					<p>Reload this page and try again.</p>
+				</div>
+			</section>
 
-		<script>
-			document
-				.querySelector('#message-form')
-				.addEventListener('submit', async (event) => {
-					event.preventDefault();
+			<section id="introduction">
+				<div class="d-flex flex-column flex-xl-row">
+					<div class="flex-shrink-0 mb-3 mb-xl-0 me-xl-3">
+						<img
+							class="d-block mx-auto pulse-box-shadow rounded-circle"
+							src="img/will-256x256.jpg"
+						/>
+					</div>
+					<div class="flex-grow-1">
+						<p>
+							<strong>Bad news:</strong> <em>Stranger Things</em>'s Will Byers is
+							trapped in the Upside Down!
+						</p>
+						<p>
+							<strong>Good news:</strong> He can still communicate one letter at a
+							time using Christmas lights strung over the alphabet.
+						</p>
+						<p>
+							<strong>Great news:</strong> He can send you or your trick-or-treater a
+							custom message! Enter your message below and then watch for Will to
+							relay it back.
+						</p>
+					</div>
+				</div>
+			</section>
 
-					const form = /** @type {HTMLFormElement} */ (event.target);
-					const body = JSON.stringify(
-						Object.fromEntries(new FormData(form)),
-					);
+			<section id="message-form">
+				<div>
+					<form autocomplete="off">
+						<fieldset class="hstack gap-3 mx-auto">
+							<input
+								class="form-control stranger"
+								id="message"
+								maxlength="32"
+								name="message"
+								placeholder="Type your message here"
+								required
+								type="text"
+							/>
+							<button class="btn btn-primary" type="submit">Send</button>
+						</fieldset>
+						<p
+							id="chars-remaining"
+							class="form-text fw-light text-opacity-50 text-white"
+						>
+							%u characters remaining.
+						</p>
+					</form>
+				</div>
+			</section>
 
-					const response = await fetch('/api/messages', {
-						body,
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-					});
+			<section id="sent-alert">
+				<div class="alert alert-success" role="alert">
+					<h3>That's a Ten-Four</h3>
+					<p>
+						Will got your message. Now watch the Christmas lights for Will to spell it
+						out one letter at a time.
+					</p>
+					<p id="queue-wait">
+						Be patient, Will has about
+						<strong><span id="queue-length">4</span></strong> messages ahead of yours.
+					</p>
+					<button class="btn btn-outline-success">Send another</button>
+				</div>
+			</section>
 
-					if (!response.ok) {
-						console.error(response.status, response.statusText);
-					}
-				});
-		</script>
+			<section id="profanity-alert">
+				<div class="alert alert-info" id="incorrect-alert" role="alert">
+					<h3>Profanity Detected</h3>
+					<p>
+						Don't be a mouthbreather! Keep messages from the Upside Down on the up and
+						up.
+					</p>
+					<button class="btn btn-outline-info">Try again</button>
+				</div>
+			</section>
+		</main>
+
+		<script src="js/index.js" type="module"></script>
+		<script src="js/snowstorm-min.js"></script>
+		<script src="js/snowstorm-customization.js"></script>
 	</body>
 </html>

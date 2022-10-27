@@ -78,7 +78,7 @@ export abstract class ColorArrayAnimation {
 		// Phase 3: Brighten.
 		timeline.to(colors, {
 			brightness: 100,
-			saturation: 50,
+			saturation: 75,
 			duration: brightenPhaseDuration,
 			ease: 'linear',
 			onStart: () =>

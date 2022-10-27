@@ -9,5 +9,6 @@
 		"prepare": "npx crlf --set=LF node_modules/.bin/live-server",
 		"start": "live-server --verbose public/"
 	},
+	"type": "module",
 	"version": "1.0.0"
 }

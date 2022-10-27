@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"checkJs": true,
+		"lib": ["DOM"],
+		"noEmit": true
+	},
+	"extends": "../tsconfig.json",
+	"include": ["public/js/*.js"]
+}

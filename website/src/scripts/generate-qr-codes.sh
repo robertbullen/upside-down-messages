@@ -1,10 +1,17 @@
 #!/usr/bin/env zsh
 
 # Declare where the website will be hosted.
-BASE_URL='https://upside-down-messages.robertbullen.net/hunt.html'
+BASE_URL='https://upside-down-messages.robertbullen.net/'
 
 # Install dependencies.
 brew install --quiet imagemagick qrencode
+
+# Create a single, large QR code for the base URL.
+qrencode \
+    --level=H \
+    --output='public/img/base-qr-code.png' \
+    --size=16 \
+    "${BASE_URL}"
 
 # Create a temporary working directory in which to place intermediate files.
 TEMP_DIR=$(mktemp -d)
@@ -19,7 +26,7 @@ for CLUE_FILE in public/clues/*.json; do
         --level=H \
         --output="${TEMP_DIR}/${CLUE_NAME}.png" \
         --size=8 \
-        "${BASE_URL}?clueName=${CLUE_NAME}"
+        "${BASE_URL}hunt.html?clueName=${CLUE_NAME}"
 done
 
 # Tile all the generated QR codes, each with a frame labeled with the clue name, into a single
@@ -29,7 +36,7 @@ magick montage \
     -mattecolor black -frame 4 \
     -geometry '+8+8' \
     "${TEMP_DIR}/*.png" \
-    "public/clues/qr-codes.png"
+    "public/img/clue-qr-codes.png"
 
 # Clean up the working directory.
 rm -rf "${TEMP_DIR}"

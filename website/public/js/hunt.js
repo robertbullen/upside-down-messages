@@ -8,127 +8,87 @@
  * @property {string} upsideDownMessage
  */
 
+/**
+ * @template {Element} T
+ * @param {string} selectors
+ * @returns {T}
+ */
+function querySelectorOrThrow(selectors) {
+	const element = /** @type {T | null} */ (document.querySelector(selectors));
+	if (!element) {
+		throw new Error(`Selectors '${selectors}' not found in document`);
+	}
+	return element;
+}
+
 const elements = {
 	/** @type {HTMLDivElement} */
-	spinnerDiv: document.querySelector('div#spinner'),
+	spinnerDiv: querySelectorOrThrow('div#spinner'),
 
 	/** @type {HTMLElement} */
-	main: document.querySelector('main'),
+	main: querySelectorOrThrow('main'),
 
 	/** @type {HTMLElement} */
-	titleSection: document.querySelector('section#title'),
+	titleSection: querySelectorOrThrow('section#title'),
 
 	/** @type {HTMLHeadingElement} */
-	titleTitleH1: document.querySelector('section#title h1'),
+	titleTitleH1: querySelectorOrThrow('section#title h1'),
 
 	/** @type {HTMLHeadingElement} */
-	titleSubtitleH2: document.querySelector('section#title h2'),
+	titleSubtitleH2: querySelectorOrThrow('section#title h2'),
 
 	/** @type {HTMLElement} */
-	errorSection: document.querySelector('section#error'),
-
-	/** @type {HTMLSpanElement} */
-	errorMessageSpan: document.querySelector('section#error span#error-message'),
-
-	/** @type {HTMLElement} */
-	questionSection: document.querySelector('section#question'),
+	questionSection: querySelectorOrThrow('section#question'),
 
 	/** @type {HTMLParagraphElement} */
-	questionQuestionP: document.querySelector('section#question p'),
+	questionQuestionP: querySelectorOrThrow('section#question p'),
 
 	/** @type {HTMLFormElement} */
-	questionForm: document.querySelector('section#question form'),
+	questionForm: querySelectorOrThrow('section#question form'),
 
 	/** @type {HTMLInputElement} */
-	questionAnswerInput: document.querySelector('section#question input#answer'),
+	questionAnswerInput: querySelectorOrThrow('section#question input#answer'),
 
 	/** @type {HTMLElement} */
-	correctAlertSection: document.querySelector('section#correct-alert'),
+	correctAlertSection: querySelectorOrThrow('section#correct-alert'),
 
 	/** @type {HTMLButtonElement} */
-	correctAlertButton: document.querySelector('section#correct-alert button'),
+	correctAlertButton: querySelectorOrThrow('section#correct-alert button'),
 
 	/** @type {HTMLElement} */
-	incorrectAlertSection: document.querySelector('section#incorrect-alert'),
+	incorrectAlertSection: querySelectorOrThrow('section#incorrect-alert'),
 
 	/** @type {HTMLButtonElement} */
-	incorrectAlertButton: document.querySelector('section#incorrect-alert button'),
+	incorrectAlertButton: querySelectorOrThrow('section#incorrect-alert button'),
 
 	/** @type {HTMLElement} */
-	riddleSection: document.querySelector('section#riddle'),
+	riddleSection: querySelectorOrThrow('section#riddle'),
 
 	/** @type {HTMLUListElement} */
-	riddleUl: document.querySelector('section#riddle ul'),
+	riddleUl: querySelectorOrThrow('section#riddle ul'),
 
 	/** @type {HTMLElement} */
-	firstUdmAlertSection: document.querySelector('section#first-udm-alert'),
+	firstUdmAlertSection: querySelectorOrThrow('section#first-udm-alert'),
 
 	/** @type {HTMLButtonElement} */
-	firstUdmAlertButton: document.querySelector('section#first-udm-alert button'),
+	firstUdmAlertButton: querySelectorOrThrow('section#first-udm-alert button'),
 
 	/** @type {HTMLElement} */
-	secondUdmAlertSection: document.querySelector('section#second-udm-alert'),
+	secondUdmAlertSection: querySelectorOrThrow('section#second-udm-alert'),
 
 	/** @type {HTMLButtonElement} */
-	secondUdmAlertButton: document.querySelector('section#second-udm-alert button'),
+	secondUdmAlertButton: querySelectorOrThrow('section#second-udm-alert button'),
 };
 
 /**
- * @returns {Clue}
+ * @param {string} text
+ * @returns {Promise<import('../../../lib/messages').Message>}
  */
-async function getClue() {
-	const queryParams = new URLSearchParams(window.location.search);
-	const clueName = queryParams.get('clueName') ?? 'chapter0';
-
-	// Fetch the clue and add it to the DOM.
-	const clueFilePath = `clues/${clueName}.json`;
-	const response = await fetch(clueFilePath);
-	if (!response.ok) {
-		throw new Error(
-			`Error fetching \`clueFilePath\`='${clueFilePath}': ${response.status} ${response.statusText}`,
-		);
-	}
-
-	return await response.json();
-}
-
-/**
- * @param {Clue} clue
- */
-function populateClue(clue) {
-	elements.titleTitleH1.innerText = clue.title;
-	elements.titleSubtitleH2.innerText = clue.subtitle;
-
-	elements.questionQuestionP.innerText = clue.question;
-
-	while (elements.riddleUl.lastElementChild) {
-		elements.riddleUl.lastElementChild.remove();
-	}
-
-	elements.riddleUl.append(
-		...clue.riddleLines.map((riddleLine) => {
-			const li = document.createElement('li');
-			li.innerText = riddleLine;
-			return li;
-		}),
-	);
-}
-
-/**
- * @param {Error} error
- */
-function populateError(error) {
-	elements.errorMessageSpan.innerText = error.message;
-}
-
-/**
- * @param {Clue} clue
- */
-async function postUpsideDownMessage(clue) {
+async function postUpsideDownMessage(text) {
 	const response = await fetch('/api/messages', {
 		// TODO: Use a type definition for `body`.
 		body: JSON.stringify({
-			text: clue.upsideDownMessage,
+			text: text,
 		}),
 		method: 'POST',
 		headers: {
@@ -139,6 +99,8 @@ async function postUpsideDownMessage(clue) {
 	if (!response.ok) {
 		throw new Error(`${response.status} ${response.statusText}`);
 	}
+
+	return response.json();
 }
 
 /**
