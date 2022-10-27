@@ -32,7 +32,7 @@
 
 			<section id="introduction">
 				<div class="d-flex flex-column flex-xl-row">
-					<div class="flex-shrink-0 mb-3 mb-xl-0 me-xl-3">
+					<div class="flex-shrink-0 mb-4 mb-xl-0 me-xl-4">
 						<img
 							class="d-block mx-auto pulse-box-shadow rounded-circle"
 							src="img/will-256x256.jpg"
@@ -69,7 +69,17 @@
 								required
 								type="text"
 							/>
-							<button class="btn btn-primary" type="submit">Send</button>
+							<button class="btn btn-primary" type="submit">
+								<div id="send">Send</div>
+								<div id="sending" class="text-nowrap">
+									<span
+										class="spinner-border spinner-border-sm"
+										role="status"
+										aria-hidden="true"
+									></span>
+									Sending...
+								</div>
+							</button>
 						</fieldset>
 						<p
 							id="chars-remaining"

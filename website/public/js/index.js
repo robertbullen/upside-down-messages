@@ -21,8 +21,17 @@ const elements = {
 	/** @type {HTMLFormElement} */
 	messageFormForm: querySelectorOrThrow('section#message-form form'),
 
+	/** @type {HTMLFieldSetElement} */
+	messageFormFieldset: querySelectorOrThrow('section#message-form fieldset'),
+
 	/** @type {HTMLInputElement} */
-	messageFormInput: querySelectorOrThrow('section#message-form form input#message'),
+	messageFormInput: querySelectorOrThrow('section#message-form input#message'),
+
+	/** @type {HTMLDivElement} */
+	messageFormSendDiv: querySelectorOrThrow('section#message-form div#send'),
+
+	/** @type {HTMLDivElement} */
+	messageFormSendingDiv: querySelectorOrThrow('section#message-form div#sending'),
 
 	/** @type {HTMLParagraphElement} */
 	messageFormCharsRemainingP: querySelectorOrThrow('section#message-form p#chars-remaining'),
@@ -47,21 +56,24 @@ const elements = {
 };
 
 /**
- * @typedef {'show-message-form' | 'show-error' | 'show-sent' | 'show-profanity-detected' } State
+ * @typedef {'show-message-form' | 'show-sending' | 'show-error' | 'show-sent' | 'show-profanity-detected' } State
  */
 
 /**
  * @param {State} state
  */
 function updateDomState(state) {
-	/** @type {Map<HTMLElement, boolean>} */
-	const showElementsMap = new Map([
-		[elements.main, false],
-		[elements.introductionSection, false],
-		[elements.messageFormSection, false],
-		[elements.errorSection, false],
-		[elements.sentAlertSection, false],
-		[elements.profanityAlertSection, false],
+	/** @type {Map<HTMLElement, 'show' | 'hide' | 'enable' | 'disable'>} */
+	const elementActionsMap = new Map([
+		[elements.main, 'hide'],
+		[elements.introductionSection, 'hide'],
+		[elements.messageFormSection, 'hide'],
+		[elements.messageFormFieldset, 'enable'],
+		[elements.messageFormSendDiv, 'show'],
+		[elements.messageFormSendingDiv, 'hide'],
+		[elements.errorSection, 'hide'],
+		[elements.sentAlertSection, 'hide'],
+		[elements.profanityAlertSection, 'hide'],
 	]);
 
 	let scrollToElement;
@@ -69,29 +81,43 @@ function updateDomState(state) {
 
 	switch (state) {
 		case 'show-message-form':
-			showElementsMap.set(elements.main, true);
-			showElementsMap.set(elements.introductionSection, true);
-			showElementsMap.set(elements.messageFormSection, true);
+			elementActionsMap.set(elements.main, 'show');
+			elementActionsMap.set(elements.introductionSection, 'show');
+			elementActionsMap.set(elements.messageFormSection, 'show');
+			elementActionsMap.set(elements.messageFormFieldset, 'enable');
+			elementActionsMap.set(elements.messageFormSendDiv, 'show');
+			elementActionsMap.set(elements.messageFormSendingDiv, 'hide');
+			scrollToElement = elements.introductionSection;
+			focusElement = elements.messageFormInput;
+			break;
+
+		case 'show-sending':
+			elementActionsMap.set(elements.main, 'show');
+			elementActionsMap.set(elements.introductionSection, 'show');
+			elementActionsMap.set(elements.messageFormSection, 'show');
+			elementActionsMap.set(elements.messageFormFieldset, 'disable');
+			elementActionsMap.set(elements.messageFormSendDiv, 'hide');
+			elementActionsMap.set(elements.messageFormSendingDiv, 'show');
 			scrollToElement = elements.introductionSection;
 			focusElement = elements.messageFormInput;
 			break;
 
 		case 'show-error':
-			showElementsMap.set(elements.main, true);
-			showElementsMap.set(elements.errorSection, true);
+			elementActionsMap.set(elements.main, 'show');
+			elementActionsMap.set(elements.errorSection, 'show');
 			scrollToElement = elements.errorSection;
 			break;
 
 		case 'show-sent':
-			showElementsMap.set(elements.main, true);
-			showElementsMap.set(elements.sentAlertSection, true);
+			elementActionsMap.set(elements.main, 'show');
+			elementActionsMap.set(elements.sentAlertSection, 'show');
 			scrollToElement = elements.sentAlertSection;
 			focusElement = elements.sentAlertButton;
 			break;
 
 		case 'show-profanity-detected':
-			showElementsMap.set(elements.main, true);
-			showElementsMap.set(elements.profanityAlertSection, true);
+			elementActionsMap.set(elements.main, 'show');
+			elementActionsMap.set(elements.profanityAlertSection, 'show');
 			scrollToElement = elements.profanityAlertSection;
 			focusElement = elements.profanityAlertButton;
 			break;
@@ -100,8 +126,19 @@ function updateDomState(state) {
 			break;
 	}
 
-	for (const [element, show] of showElementsMap) {
-		showElement(element, show);
+	for (const [element, action] of elementActionsMap) {
+		switch (action) {
+			case 'show':
+			case 'hide':
+				showElement(element, action === 'show');
+				break;
+
+			case 'enable':
+			case 'disable':
+				// @ts-ignore
+				element.disabled = action === 'disable';
+				break;
+		}
 	}
 
 	// if (scrollToElement) {
@@ -143,6 +180,8 @@ function main() {
 		elements.messageFormForm.addEventListener('submit', (event) => {
 			tryCatch(updateDomState, async () => {
 				event.preventDefault();
+
+				updateDomState('show-sending');
 
 				/** @type {import('../../../lib/messages.js').MessageRequest} */
 				const messageRequest = { text: elements.messageFormInput.value };
